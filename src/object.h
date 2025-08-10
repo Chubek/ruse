@@ -8,8 +8,6 @@
 #include <stdint.h>
 #include <uchar.h>
 
-#include "ast.h"
-
 typedef struct Object object_t;
 typedef struct Pair pair_t;
 typedef struct Closure closure_t;
@@ -67,7 +65,7 @@ struct Closure
 {
   object_t *formals;
   object_t *env;
-  astnode_t *body;
+  pair_t *body_root;
 };
 
 struct Procedure
