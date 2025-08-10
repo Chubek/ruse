@@ -76,11 +76,7 @@ struct Closure
 struct Procedure
 {
   bool closure;
-  union
-  {
-    closure_t *v_closure;
-    primfn_t *v_prim;
-  };
+  object_t *value;
 };
 
 struct Formal
@@ -109,6 +105,8 @@ struct Object
     OBJ_Synobj,
     OBJ_Character,
     OBJ_Procedure,
+    OBJ_Closure,
+    OBJ_PrimFn,
     OBJ_Formal,
   } type;
 
@@ -121,6 +119,8 @@ struct Object
     bytevector_t *v_bytevector;
     procedure_t *v_procedure;
     formal_t *v_formal;
+    primfn_t *v_primfn;
+    closure_t *v_closure;
 
     intmax_t v_integer;
     double v_real;
