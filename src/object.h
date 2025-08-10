@@ -82,7 +82,8 @@ struct Procedure
 struct Formal
 {
   bool varargs;
-  object_t *name;
+  bool ellipses;
+  object_t *value;
 };
 
 struct Object
