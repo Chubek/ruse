@@ -74,7 +74,6 @@ object_delete (object_t *obj)
   if (obj == NULL)
     return;
 
-  object_t *next_obj = obj->next;
   switch (obj->type)
     {
     case OBJ_Nil:
@@ -133,16 +132,74 @@ object_delete (object_t *obj)
       object_delete (obj->v_port);
     case OBJ_Pair:
       object_delete (obj->v_pair->first);
-      object_delete (obj=>v_pair->rest);
+      object_delete (obj = > v_pair->rest);
       break;
     }
 
-  object_delete (next_obj);
+  free (obj);
 }
 
 void
 object_append (object_t *head, object_t *newobj)
 {
+  if (head == NULL)
+    return;
+
   head->tail->next = newobj;
   head->tail = newobj;
+}
+
+void
+gc_collect (object_t **roots, size_t num_roots)
+{
+  for (size_t i = 0; i < num_roots; i++)
+    {
+      gc_mark (roots[i]);
+      gc_sweep (roots[i]);
+    }
+}
+
+void
+gc_mark (object_t *obj)
+{
+  if (obj == NULL)
+    return;
+  object_t *next = obj->next;
+  obj->marked = true;
+  switch (obj->type)
+    {
+    case OBJ_Pair:
+      gc_mark (obj->v_pair->first);
+      gc_mark (obj->v_pair->rest);
+      break;
+    case OBJ_Vector:
+      for (size_t i = 0; i < obj->v_vector->size; i++)
+        gc_mark (obj->v_vector->vals[i]);
+      break;
+    case OBJ_Environ:
+      for (size_t i = 0; i obj->v_environ->size; i++)
+        {
+          for (entry_t *e = obj->v_environ->entries[i]; e; e = e->next)
+            gc_mark (e);
+        }
+      break;
+    default:
+      break;
+    }
+
+  gc_mark (next);
+}
+
+void
+gc_sweep (object_t *obj)
+{
+  if (obj == NULL)
+    return;
+
+  for (object_t *o = obj; o; o = o->next)
+    {
+      if (!o->marked)
+        object_delete (o);
+      o->marked = false;
+    }
 }
