@@ -4,6 +4,8 @@
 #include "memory.h"
 #include "types.h"
 
+#define COLL_GROWTH_RATE 0.75
+
 object_t *
 object_new (objtype_t type, void *value)
 {
@@ -183,6 +185,9 @@ gc_mark (object_t *obj)
         {
           for (entry_t *e = obj->v_environ->entries[i]; e; e = e->next)
             {
+              if (!e)
+                continue;
+
               gc_mark (e->key);
               gc_mark (e->value);
             }
@@ -207,4 +212,91 @@ gc_sweep (object_t *obj)
   else
     obj->marked = false;
   gc_sweep (next);
+}
+
+void
+environ_grow_if_should (environ_t **env)
+{
+  if ((*env)->count / (*env)->size <= COLL_GROWTH_RATE)
+    return;
+
+  environ_t *new_env = malloc (sizeof (environ_t));
+  new_env->entries = calloc ((*env)->size * 2, sizeof (entry_t));
+  new_env->size = (*env)->size * 2;
+  new_env->count = 0;
+
+  for (size_t i = 0; i < (*env)->size; i++)
+    {
+      for (entry_t *e = (*env)->entries[i]; e; e = e->next)
+        {
+          if (!e)
+            continue;
+          environ_insert (new_env, e->key, e->value);
+        }
+    }
+
+  free ((*env)->entries);
+  free (*env);
+  *env = new_env;
+}
+
+void
+environ_insert (environ_t *env, object_t *key, object_t *value)
+{
+  environ_grow_if_should (&env);
+  uint32_t hash = object_hash (key);
+  if (hash >= env->size)
+    raise_runtime_error ("Object hash for insertion larger than table size");
+
+  entry_t *bucket = env->entries[hash], *e;
+  for (e = bucket; e->next; e = e->next)
+    {
+      if (object_equals (e->key, key))
+        {
+          e->value = value;
+          return;
+        }
+    }
+
+  e->next = malloc (sizeof (entry_t));
+  e->next->next = NULL;
+  e->next->key = key;
+  e->next->value = value;
+}
+
+object_t *
+environ_retrieve (environ_t *env, object_t *key)
+{
+  uint32_t hash = object_hash (key);
+  if (hash >= env->size)
+    raise_runtime_error ("Object hash for retrieval larger than table size");
+
+  entry_t *bucket = env->entries[hash], *e;
+  for (e = bucket; e && !object_equals (e->key, key); e = e->next)
+    ;
+
+  if (!e)
+    raise_runtime_error ("Key given for retrieval does not exist in table");
+
+  return e->value;
+}
+
+void
+environ_delete (environ_t *env, object_t *key)
+{
+  uint32_t hash = object_hash (key);
+  if (hash >= env->size)
+    raise_runtime_error ("Object hash for deletion larger than table size");
+
+  entry_t *bucket = env->buckets[hash], *e, *e_prev;
+  for (e = bucket; e && !object_equals (e->key, key);)
+    {
+      e_prev = e;
+      e = e->next;
+    }
+
+  if (!e)
+    raise_runtime_error ("Key given for deletion does not exist in table");
+
+  e_prev->next = e->next;
 }
