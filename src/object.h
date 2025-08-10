@@ -3,12 +3,12 @@
 
 #define POSIX_SOURCE
 #define POSIX_C_SOURCE
+#include <complex.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <uchar.h>
-#include <complex.h>
 
 typedef struct Object object_t;
 typedef struct Pair pair_t;
@@ -35,7 +35,10 @@ struct Port
 {
   bool read;
   bool write;
+  bool append;
+  bool binary;
   FILE *stream;
+  bool stdio;
   const char fpath[PATH_MAX + 1];
 };
 
@@ -133,5 +136,11 @@ struct Object
   bool marked;
   object_t *next, *tail;
 };
+
+void environ_insert (environ_t *env, object_t *key, object_t *value);
+object_t *environ_retrieve (environ_t *env, object_t *key);
+void environ_delete (environ_t *env, object_t *key);
+
+
 
 #endif
