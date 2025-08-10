@@ -3,6 +3,7 @@
 
 #include "memory.h"
 #include "types.h"
+#include "utils.h"
 
 #define COLL_GROWTH_RATE 0.75
 
@@ -11,6 +12,7 @@ object_new (objtype_t type, void *value)
 {
   object_t *obj = calloc (1, sizeof (object_t));
   obj->type = type;
+  obj->hash = 0;
   obj->marked = false;
   obj->next = NULL;
   obj->tail = obj;
@@ -151,6 +153,33 @@ object_append (object_t *head, object_t *newobj)
 
   head->tail->next = newobj;
   head->tail = newobj;
+}
+
+uint32_t
+object_hash (object_t *obj)
+{
+  if (obj->hash)
+    return obj->hash;
+
+  if (obj->type == OBJ_String || obj->type == OBJ_Symbol
+      || obj->type == OBJ_Lable)
+    obj->hash = fnv1b_hash32 (obj->v_buffz) + 1;
+  else if (obj->type == OBJ_Real || obj->type == OBJ_Integer
+           || obj->type == OBJ_Complex)
+    obj->hash = splitmax_hash32 (obj->v_integer) + 1;
+  else
+    raise_runtime_error ("Unhashable object");
+
+  return obj->hash;
+}
+
+bool
+object_equals (object_t *obj1, object_t *obj2)
+{
+  if (obj1->type != obj2->type)
+    return false;
+
+  return object_hash (obj1) == object_hash (obj2);
 }
 
 void
