@@ -215,19 +215,19 @@ gc_sweep (object_t *obj)
 }
 
 void
-environ_grow_if_should (environ_t **env)
+environ_grow_if_should (environ_t **envp)
 {
-  if ((*env)->count / (*env)->size <= COLL_GROWTH_RATE)
+  if ((*envp)->count / (*envp)->size <= COLL_GROWTH_RATE)
     return;
 
   environ_t *new_env = malloc (sizeof (environ_t));
-  new_env->entries = calloc ((*env)->size * 2, sizeof (entry_t));
-  new_env->size = (*env)->size * 2;
+  new_env->entries = calloc ((*envp)->size * 2, sizeof (entry_t));
+  new_env->size = (*envp)->size * 2;
   new_env->count = 0;
 
-  for (size_t i = 0; i < (*env)->size; i++)
+  for (size_t i = 0; i < (*envp)->size; i++)
     {
-      for (entry_t *e = (*env)->entries[i]; e; e = e->next)
+      for (entry_t *e = (*envp)->entries[i]; e; e = e->next)
         {
           if (!e)
             continue;
@@ -235,9 +235,9 @@ environ_grow_if_should (environ_t **env)
         }
     }
 
-  free ((*env)->entries);
-  free (*env);
-  *env = new_env;
+  free ((*envp)->entries);
+  free (*envp);
+  *envp = new_env;
 }
 
 void
