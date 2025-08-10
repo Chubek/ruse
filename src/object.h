@@ -5,6 +5,7 @@
 #define POSIX_C_SOURCE
 #include <limits.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <uchar.h>
 
