@@ -5,8 +5,8 @@
 #define POSIX_C_SOURCE
 #include <limits.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <uchar.h>
 
 typedef struct Object object_t;
@@ -21,6 +21,8 @@ typedef struct Entry entry_t;
 typedef struct Formal formal_t;
 
 typedef object_t *(*primfn_t) (object_t *args, object_t *env);
+
+typedef enum ObjectType objtype_t;
 
 struct Pair
 {
@@ -82,13 +84,13 @@ struct Procedure
 
 struct Formal
 {
-   bool varargs;
-   object_t *name;
+  bool varargs;
+  object_t *name;
 };
 
 struct Object
 {
-  enum
+  enum ObjectType
   {
     OBJ_Pair,
     OBJ_Nil,
