@@ -122,7 +122,7 @@ struct Object
 
     intmax_t v_integer;
     double v_real;
-    const uint8_t *v_label, *v_symbol, *v_string;
+    const uint8_t *v_buffz;
   };
 
   bool marked;
