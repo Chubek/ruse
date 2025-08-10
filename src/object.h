@@ -141,6 +141,11 @@ void environ_insert (environ_t *env, object_t *key, object_t *value);
 object_t *environ_retrieve (environ_t *env, object_t *key);
 void environ_delete (environ_t *env, object_t *key);
 
+object_t *object_new(objtype_t type, void *value);
+void object_append(object_t *head, object_t *newobj);
+void object_delete(object_t *obj);
+uint32_t object_hash (object_t *obj);
+bool object_equals (object_t *obj1, object_t *obj2);
 
 
 #endif
