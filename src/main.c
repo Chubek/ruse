@@ -71,7 +71,7 @@ object_new (objtype_t type, void *value)
 void
 object_delete (object_t *obj)
 {
-  if (obj == NULL)
+  if (!obj)
     return;
 
   switch (obj->type)
@@ -96,6 +96,7 @@ object_delete (object_t *obj)
             {
               entry_t *next = e->next;
               free (e->key);
+	      object_delete (e->key);
               object_delete (e->value);
               free (e);
               e = next;
@@ -126,6 +127,7 @@ object_delete (object_t *obj)
       break;
     case OBJ_Procedure:
       object_delete (obj->v_procedure->value);
+
       break;
     case OBJ_Port:
       fclose (obj->v_port->stream);
@@ -142,7 +144,7 @@ object_delete (object_t *obj)
 void
 object_append (object_t *head, object_t *newobj)
 {
-  if (head == NULL)
+  if (head)
     return;
 
   head->tail->next = newobj;
@@ -162,7 +164,7 @@ gc_collect (object_t **roots, size_t num_roots)
 void
 gc_mark (object_t *obj)
 {
-  if (obj == NULL)
+  if (!obj)
     return;
   object_t *next = obj->next;
   obj->marked = true;
@@ -193,7 +195,7 @@ gc_mark (object_t *obj)
 void
 gc_sweep (object_t *obj)
 {
-  if (obj == NULL)
+  if (!obj)
     return;
 
   for (object_t *o = obj; o; o = o->next)
