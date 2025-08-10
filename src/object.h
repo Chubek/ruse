@@ -43,7 +43,7 @@ struct Environ
 {
   struct Entry
   {
-    const char *key;
+    object_t *key;
     object_t *value;
     entry_t *next;
   } *entries;
