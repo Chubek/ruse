@@ -96,7 +96,7 @@ object_delete (object_t *obj)
             {
               entry_t *next = e->next;
               free (e->key);
-	      object_delete (e->key);
+              object_delete (e->key);
               object_delete (e->value);
               free (e);
               e = next;
@@ -182,7 +182,10 @@ gc_mark (object_t *obj)
       for (size_t i = 0; i obj->v_environ->size; i++)
         {
           for (entry_t *e = obj->v_environ->entries[i]; e; e = e->next)
-            gc_mark (e);
+            {
+              gc_mark (e->key);
+              gc_mark (e->value);
+            }
         }
       break;
     default:
