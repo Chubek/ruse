@@ -17,6 +17,7 @@ typedef struct Vector vector_t;
 typedef struct Bytevector bytevector_t;
 typedef struct Procedure procedure_t;
 typedef struct Entry entry_t;
+typedef struct Formal formal_t;
 
 typedef object_t *(*primfn_t) (object_t *args, object_t *env);
 
@@ -65,7 +66,7 @@ struct Closure
 {
   object_t *formals;
   object_t *env;
-  pair_t *body_root;
+  object_t *body;
 };
 
 struct Procedure
@@ -76,6 +77,12 @@ struct Procedure
     closure_t *v_closure;
     primfn_t *v_prim;
   };
+};
+
+struct Formal
+{
+   bool varargs;
+   object_t *name;
 };
 
 struct Object
@@ -97,6 +104,7 @@ struct Object
     OBJ_Synobj,
     OBJ_Character,
     OBJ_Procedure,
+    OBJ_Formal,
   } type;
 
   union
@@ -107,11 +115,15 @@ struct Object
     vector_t *v_vector;
     bytevector_t *v_bytevector;
     procedure_t *v_procedure;
+    formal_t *v_formal;
 
     intmax_t v_integer;
     double v_real;
     const uint8_t *v_label, *v_symbol, *v_string;
   };
+
+  bool marked;
+  object_t *next;
 };
 
 #endif
