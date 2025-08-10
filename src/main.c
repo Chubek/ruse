@@ -148,7 +148,7 @@ object_delete (object_t *obj)
 void
 object_append (object_t *head, object_t *newobj)
 {
-  if (head)
+  if (!head)
     return;
 
   head->tail->next = newobj;
@@ -183,12 +183,12 @@ object_equals (object_t *obj1, object_t *obj2)
 }
 
 void
-gc_collect (object_t **roots, size_t num_roots)
+gc_collect (heap_t *heap)
 {
-  for (size_t i = 0; i < num_roots; i++)
+  for (size_t i = 0; i < heap->count; i++)
     {
-      gc_mark (roots[i]);
-      gc_sweep (roots[i]);
+      gc_mark (heap->roots[i]);
+      gc_sweep (heap->roots[i]);
     }
 }
 
@@ -241,6 +241,35 @@ gc_sweep (object_t *obj)
   else
     obj->marked = false;
   gc_sweep (next);
+}
+
+heap_t *
+heap_new (void)
+{
+  heap_t *heap = malloc (sizeof (heap_t));
+  heap->roots = calloc (INIT_ROOTS_SIZE, sizeof (uintptr_t));
+  heap->size = INIT_ROOTS_SIZE;
+  heap->count = 0;
+
+  return heap;
+}
+
+void
+heap_delete (heap_t *heap)
+{
+  free (heap->roots);
+  free (heap);
+}
+
+void
+heap_add_root (heap_t *heap, object_t *root)
+{
+  if (heap->count / heap->size >= COLL_GROWTH_RATE)
+    {
+      heap->size *= 1.5;
+      heap->roots = realloc (heap->roots, heap->size);
+    }
+  heap->roots[heap->count++] = root;
 }
 
 void
