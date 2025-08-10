@@ -52,7 +52,6 @@ struct Environ
   } *entries;
   size_t size;
   size_t count;
-  int log2;
 };
 
 struct Vector
