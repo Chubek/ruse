@@ -126,7 +126,7 @@ struct Object
   };
 
   bool marked;
-  object_t *next;
+  object_t *next, *tail;
 };
 
 #endif
