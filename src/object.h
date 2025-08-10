@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <uchar.h>
+#include <complex.h>
 
 typedef struct Object object_t;
 typedef struct Pair pair_t;
@@ -101,6 +102,7 @@ struct Object
     OBJ_Bytevector,
     OBJ_Integer,
     OBJ_Real,
+    OBJ_Complex,
     OBJ_Symbol,
     OBJ_String,
     OBJ_Label,
@@ -122,7 +124,9 @@ struct Object
 
     intmax_t v_integer;
     double v_real;
+    double complex v_complex;
     const uint8_t *v_buffz;
+    bool v_bool;
   };
 
   bool marked;
