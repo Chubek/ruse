@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <uchar.h>
 
+#define MAX_PRIM_NAME 16
+
 typedef struct Object object_t;
 typedef struct Pair pair_t;
 typedef struct Closure closure_t;
@@ -20,6 +22,7 @@ typedef struct Bytevector bytevector_t;
 typedef struct Procedure procedure_t;
 typedef struct Entry entry_t;
 typedef struct Formal formal_t;
+typedef struct Builtin builtin_t;
 
 typedef object_t *(*primfn_t) (object_t *args, object_t *env);
 
@@ -40,6 +43,12 @@ struct Port
   FILE *stream;
   bool stdio;
   const char fpath[PATH_MAX + 1];
+};
+
+struct Builtin
+{
+  const char name[MAX_PRIM_NAME + 1];
+  primfn_t *fn;
 };
 
 struct Environ
@@ -109,7 +118,7 @@ struct Object
     OBJ_Character,
     OBJ_Procedure,
     OBJ_Closure,
-    OBJ_PrimFn,
+    OBJ_Builtin,
     OBJ_Formal,
   } type;
 
@@ -122,7 +131,7 @@ struct Object
     bytevector_t *v_bytevector;
     procedure_t *v_procedure;
     formal_t *v_formal;
-    primfn_t *v_primfn;
+    builtin_t *v_builtin;
     closure_t *v_closure;
 
     intmax_t v_integer;
@@ -132,6 +141,7 @@ struct Object
     bool v_bool;
   };
 
+  uint32_t hash;
   bool marked;
   object_t *next, *tail;
 };
@@ -141,11 +151,10 @@ void environ_insert (environ_t *env, object_t *key, object_t *value);
 object_t *environ_retrieve (environ_t *env, object_t *key);
 void environ_delete (environ_t *env, object_t *key);
 
-object_t *object_new(objtype_t type, void *value);
-void object_append(object_t *head, object_t *newobj);
-void object_delete(object_t *obj);
+object_t *object_new (objtype_t type, void *value);
+void object_append (object_t *head, object_t *newobj);
+void object_delete (object_t *obj);
 uint32_t object_hash (object_t *obj);
 bool object_equals (object_t *obj1, object_t *obj2);
-
 
 #endif

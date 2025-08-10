@@ -59,8 +59,8 @@ object_new (objtype_t type, void *value)
     case OBJ_Closure:
       obj->v_closure = (closure_t *)value;
       break;
-    case OBJ_PrimFn:
-      obj->v_primfn = (primfn_t *)value;
+    case OBJ_Builtin:
+      obj->v_builtin = (builtin_t *)value;
       break;
     case OBJ_Formal:
       obj->v_formal = (formal_t *)value;
@@ -85,7 +85,7 @@ object_delete (object_t *obj)
     case OBJ_Integer:
     case OBJ_Real:
     case OBJ_Complex:
-    case OBJ_PrimFn:
+    case OBJ_Builtin:
       break;
     case OBJ_String:
     case OBJ_Label:
