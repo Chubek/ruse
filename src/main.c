@@ -201,10 +201,10 @@ gc_sweep (object_t *obj)
   if (!obj)
     return;
 
-  for (object_t *o = obj; o; o = o->next)
-    {
-      if (!o->marked)
-        object_delete (o);
-      o->marked = false;
-    }
+  object_t *next = obj->next;
+  if (!obj->marked)
+    object_delete (obj);
+  else
+    obj->marked = false;
+  gc_sweep (next);
 }
