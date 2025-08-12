@@ -26,7 +26,7 @@ object_new (objtype_t type, void *value, heap_t *heap)
       obj->buffz = (const uint8_t *)value;
       break;
     case OBJ_Integer:
-      memmove (&obj - v_integer, value, sizeof (intmax_t));
+      memmove (&obj->v_integer, value, sizeof (intmax_t));
       break;
     case OBJ_Real:
       memmove (&obj->v_real, value, sizeof (double));
