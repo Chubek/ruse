@@ -26,7 +26,7 @@ heap_add_to_pool (heap_t *heap, object_t *obj)
   if (heap->count / heap->size >= HEAP_GROWTH_FACTOR)
     {
       heap->size *= 2;
-      heap->pool = realloc (heap->pool, heap->size);
+      heap->pool = realloc (heap->pool, heap->size * sizeof (object_t *));
     }
   heap->pool[heap->count++] = obj;
 }
