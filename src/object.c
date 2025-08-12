@@ -104,7 +104,6 @@ object_delete (object_t *obj)
           while (e)
             {
               entry_t *next = e->next;
-              free (e->key);
               object_delete (e->key);
               object_delete (e->value);
               free (e);
