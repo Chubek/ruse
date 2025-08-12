@@ -22,8 +22,13 @@ object_new (objtype_t type, void *value, heap_t *heap)
       break;
     case OBJ_String:
     case OBJ_Label:
-    case OBJ_Symbol:
       obj->buffz = (const uint8_t *)value;
+      break;
+    case OBJ_Symbol:
+      obj->v_symbol = (symbol_t *)value;
+      break;
+    case OBJ_Synobj:
+      obj->v_synobj = (synobj_t *)value;
       break;
     case OBJ_Integer:
       memmove (&obj->v_integer, value, sizeof (intmax_t));
@@ -97,8 +102,16 @@ object_delete (object_t *obj)
       break;
     case OBJ_String:
     case OBJ_Label:
-    case OBJ_Symbol:
       free (obj->v_buffz);
+      break;
+    case OBJ_Symbol:
+      free (obj->v_symbol->id);
+      free (obj->v_symbol);
+      break;
+    case OBJ_Synobj:
+      object_delete (obj->v_synobj->datum);
+      object_delete (obj->v_synobj->env);
+      free (obj->v_synobj);
       break;
     case OBJ_Environ:
       for (size_t i = 0; i < obj->v_environ->size; i++)
@@ -380,10 +393,21 @@ object_new_character (char32_t ch, heap_t *heap)
 }
 
 object_t *
-object_new_symbol (const uint8_t *utf8, heap_t *heap)
+object_new_symbol (const uint8_t *id, size_t id_len, heap_t *heap)
 {
-  uint8_t *dup = strdup ((const char *)utf8);
-  return object_new (OBJ_Symbol, dup, heap);
+  symbol_t *sym = malloc (sizeof (symbol_t));
+  sym->id = strndup ((const char *)id, id_len);
+  sym->mark = rand ();
+  return object_new (OBJ_Symbol, (void *)sym, heap);
+}
+
+object_t *
+object_new_synobj (object_t *datum, object_t *env, heap_t *heap)
+{
+  synobj_t *syn = malloc (sizeof (synobj_t));
+  syn->datum = datum;
+  syn->env = env;
+  return object_new (OBJ_Synobj, (void *)syn, heap);
 }
 
 object_t *

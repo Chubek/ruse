@@ -23,10 +23,12 @@ typedef struct Vector vector_t;
 typedef struct Bytevector bytevector_t;
 typedef struct Procedure procedure_t;
 typedef struct Entry entry_t;
+typedef struct Synobj synobj_t;
 typedef struct Formal formal_t;
 typedef struct Builtin builtin_t;
 typedef struct Conti conti_t;
 typedef struct Stack stack_t;
+typedef struct Symbol symbol_t;
 
 typedef object_t *(*primfn_t) (object_t *args, object_t *env);
 
@@ -113,6 +115,20 @@ struct Stack
   size_t count;
 };
 
+struct Synobj
+{
+  object_t *datum;
+  object_t *env;
+  const char srcfile[MAX_PATH + 1];
+  size_t line, column;
+};
+
+struct Symbol
+{
+  const uint8_t *id;
+  int mark;
+};
+
 struct Object
 {
   enum ObjectType
@@ -153,6 +169,8 @@ struct Object
     closure_t *v_closure;
     conti_t *v_conti;
     stack_t *v_stack;
+    symbol_t *v_symbol;
+    synobj_t *v_synobj;
 
     intmax_t v_integer;
     double v_real;
@@ -194,13 +212,15 @@ object_t *object_new_conti (object_t *captured_stack, heap_t *heap);
 
 object_t *object_new_stack (size_t size, heap_t *heap);
 
+object_t *object_new_symbol (const uint8_t *id, size_t id_len, heap_t *heap);
+object_t *object_new_synobj (object_t *datum, object_t *env, heap_t *heap);
+
 object_t *object_new_integer (intmax_t value, heap_t *heap);
 object_t *object_new_real (double value, heap_t *heap);
 object_t *object_new_complex (double complex value, heap_t *heap);
 object_t *object_new_bool (bool value, heap_t *heap);
 object_t *object_new_character (uint32_t ch, heap_t *heap);
 
-object_t *object_new_symbol (const uint8_t *utf8, heap_t *heap);
 object_t *object_new_string (const uint8_t *utf8, heap_t *heap);
 object_t *object_new_label (const uint8_t *utf8, heap_t *heap);
 
