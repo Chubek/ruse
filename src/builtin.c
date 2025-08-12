@@ -1,7 +1,6 @@
 #include <complex.h>
 #include <math.h>
 
-#include "environ.h"
 #include "heap.h"
 #include "object.h"
 
@@ -194,4 +193,20 @@ builtin_rem (object_t *args, object_t *env)
   int sign = denum->v_integer / denum->v_integer;
 
   return object_new_integer ((inum % idenum) * sign, current_heap);
+}
+
+object_t*
+builtin_set (object_t *args, object_t *env)
+{
+    if (args->next == NULL)
+	    raise_runtime_error ("Set needs two arguments");
+
+    object_t *name = args;
+    object_t *value = args->next;
+
+    if (name->type != OBJ_Symbol)
+	    raise_runtime_error ("First argument to set! must be a symbol or identifier");
+
+    environ_install (env->v_environ, name, value);
+    return NULL;
 }
