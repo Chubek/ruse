@@ -351,7 +351,7 @@ object_new_formal (bool varargs, bool ellipses, object_t *value, heap_t *heap)
 }
 
 object_t *
-object_new_builtin (const char *name, primfn_t fn, heap_t *heap)
+object_new_builtin (const char *name, primfn_t *fn, heap_t *heap)
 {
   builtin_t *b = malloc (sizeof (builtin_t));
   strncpy ((char *)b->name, name, MAX_PRIM_NAME);

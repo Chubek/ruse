@@ -206,7 +206,7 @@ object_t *object_new_procedure (bool closure, object_t *value, heap_t *heap);
 object_t *object_new_formal (bool varargs, bool ellipses, object_t *value,
                              heap_t *heap);
 
-object_t *object_new_builtin (const char *name, primfn_t fn, heap_t *heap);
+object_t *object_new_builtin (const char *name, primfn_t *fn, heap_t *heap);
 
 object_t *object_new_conti (object_t *captured_stack, heap_t *heap);
 
