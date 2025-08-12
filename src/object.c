@@ -24,16 +24,16 @@ object_new (objtype_t type, void *value, heap_t *heap)
       obj->buffz = (const uint8_t *)value;
       break;
     case OBJ_Integer:
-      obj->v_integer = *(intmax_t *)value;
+      memmove (&obj - v_integer, value, sizeof (intmax_t));
       break;
     case OBJ_Real:
-      obj->v_real = *(double *)value;
+      memmove (&obj->v_real, value, sizeof (double));
       break;
     case OBJ_Complex:
-      obj->v_complex = *(double complex *)value;
+      memmove (&obj->v_complex, value, sizeof (double complex));
       break;
     case OBJ_Bool:
-      obj->v_bool = *(bool *)value;
+      memmove (&obj->v_bool, value, sizeof (bool));
       break;
     case OBJ_Vector:
       obj->v_vector = (vector_t *)value;
@@ -249,167 +249,158 @@ object_new_port (const char *path, bool read, bool write, bool append,
   return object_new (OBJ_Port, (void *)port, heap);
 }
 
-object_t*
-object_new_closure (object_t *formals, object_t *env, object_t *body, heap_t *heap)
+object_t *
+object_new_closure (object_t *formals, object_t *env, object_t *body,
+                    heap_t *heap)
 {
-   closure_t *closure = malloc (sizeof (closure_t));
-   closure->formals = formals;
-   closure->env = env;
-   closure->body = body;
+  closure_t *closure = malloc (sizeof (closure_t));
+  closure->formals = formals;
+  closure->env = env;
+  closure->body = body;
 
-   return object_new (OBJ_Closure, (void*)closure, heap);
+  return object_new (OBJ_Closure, (void *)closure, heap);
 }
 
+#include "object.h"
 #include <stdlib.h>
 #include <string.h>
-#include "object.h"
 
 object_t *
-object_new_environ(size_t size, heap_t *heap)
+object_new_environ (size_t size, heap_t *heap)
 {
-    environ_t *env = malloc(sizeof(environ_t));
-    env->entries = calloc(size, sizeof(entry_t)); // table of entries
-    env->size = size;
-    env->count = 0;
-    return object_new(OBJ_Environ, env, heap);
+  environ_t *env = malloc (sizeof (environ_t));
+  env->entries = calloc (size, sizeof (entry_t)); // table of entries
+  env->size = size;
+  env->count = 0;
+  return object_new (OBJ_Environ, env, heap);
 }
 
 object_t *
-object_new_vector(size_t size, heap_t *heap)
+object_new_vector (size_t size, heap_t *heap)
 {
-    vector_t *vec = malloc(sizeof(vector_t));
-    vec->vals = calloc(size, sizeof(object_t *));
-    vec->size = size;
-    vec->count = 0;
-    return object_new(OBJ_Vector, vec, heap);
+  vector_t *vec = malloc (sizeof (vector_t));
+  vec->vals = calloc (size, sizeof (object_t *));
+  vec->size = size;
+  vec->count = 0;
+  return object_new (OBJ_Vector, vec, heap);
 }
 
 object_t *
-object_new_bytevector(size_t size, heap_t *heap)
+object_new_bytevector (size_t size, heap_t *heap)
 {
-    bytevector_t *bv = malloc(sizeof(bytevector_t));
-    bv->vals = calloc(size, sizeof(uint8_t));
-    bv->size = size;
-    bv->count = 0;
-    return object_new(OBJ_Bytevector, bv, heap);
+  bytevector_t *bv = malloc (sizeof (bytevector_t));
+  bv->vals = calloc (size, sizeof (uint8_t));
+  bv->size = size;
+  bv->count = 0;
+  return object_new (OBJ_Bytevector, bv, heap);
 }
 
 object_t *
-object_new_procedure(bool closure, object_t *value, heap_t *heap)
+object_new_procedure (bool closure, object_t *value, heap_t *heap)
 {
-    procedure_t *proc = malloc(sizeof(procedure_t));
-    proc->closure = closure;
-    proc->value = value;
-    return object_new(OBJ_Procedure, proc, heap);
+  procedure_t *proc = malloc (sizeof (procedure_t));
+  proc->closure = closure;
+  proc->value = value;
+  return object_new (OBJ_Procedure, proc, heap);
 }
 
 object_t *
-object_new_formal(bool varargs, bool ellipses, object_t *value, heap_t *heap)
+object_new_formal (bool varargs, bool ellipses, object_t *value, heap_t *heap)
 {
-    formal_t *f = malloc(sizeof(formal_t));
-    f->varargs = varargs;
-    f->ellipses = ellipses;
-    f->value = value;
-    return object_new(OBJ_Formal, f, heap);
+  formal_t *f = malloc (sizeof (formal_t));
+  f->varargs = varargs;
+  f->ellipses = ellipses;
+  f->value = value;
+  return object_new (OBJ_Formal, f, heap);
 }
 
 object_t *
-object_new_builtin(const char *name, primfn_t fn, heap_t *heap)
+object_new_builtin (const char *name, primfn_t fn, heap_t *heap)
 {
-    builtin_t *b = malloc(sizeof(builtin_t));
-    strncpy((char *)b->name, name, MAX_PRIM_NAME);
-    ((char *)b->name)[MAX_PRIM_NAME] = '\0';
-    b->fn = fn;
-    return object_new(OBJ_Builtin, b, heap);
+  builtin_t *b = malloc (sizeof (builtin_t));
+  strncpy ((char *)b->name, name, MAX_PRIM_NAME);
+  ((char *)b->name)[MAX_PRIM_NAME] = '\0';
+  b->fn = fn;
+  return object_new (OBJ_Builtin, b, heap);
 }
 
 object_t *
-object_new_conti(object_t *captured_stack, heap_t *heap)
+object_new_conti (object_t *captured_stack, heap_t *heap)
 {
-    conti_t *c = malloc(sizeof(conti_t));
-    c->captured_stack = captured_stack;
-    return object_new(OBJ_Conti, c, heap);
+  conti_t *c = malloc (sizeof (conti_t));
+  c->captured_stack = captured_stack;
+  return object_new (OBJ_Conti, c, heap);
 }
 
 object_t *
-object_new_stack(size_t size, heap_t *heap)
+object_new_stack (size_t size, heap_t *heap)
 {
-    stack_t *s = malloc(sizeof(stack_t));
-    s->objs = calloc(size, sizeof(object_t *));
-    s->size = size;
-    s->count = 0;
-    return object_new(OBJ_Stack, s, heap);
-}
-
-
-object_t *
-object_new_integer(intmax_t value, heap_t *heap)
-{
-    return object_new(OBJ_Integer, (void *)(intptr_t)value, heap);
+  stack_t *s = malloc (sizeof (stack_t));
+  s->objs = calloc (size, sizeof (object_t *));
+  s->size = size;
+  s->count = 0;
+  return object_new (OBJ_Stack, s, heap);
 }
 
 object_t *
-object_new_real(double value, heap_t *heap)
+object_new_integer (intmax_t value, heap_t *heap)
 {
-    double *pv = malloc(sizeof(double));
-    *pv = value;
-    object_t *obj = object_new(OBJ_Real, (void*)pv, heap);
-    free (pv);
-    return obj;
+  return object_new (OBJ_Integer, (void *)&value, heap);
 }
 
 object_t *
-object_new_complex(double complex value, heap_t *heap)
+object_new_real (double value, heap_t *heap)
 {
-    double complex *pv = malloc(sizeof(double complex));
-    *pv = value;
-    object_t *obj = object_new(OBJ_Complex, (void*)pv, heap);
-    free (pv);
-    return obj;
+  return object_new (OBJ_Real, (void *)&value, heap);
 }
 
 object_t *
-object_new_bool(bool value, heap_t *heap)
+object_new_complex (double complex value, heap_t *heap)
 {
-    return object_new(OBJ_Bool, (void *)(intptr_t)value, heap);
+  return object_new (OBJ_Complex, (void *)&value, heap);
 }
 
 object_t *
-object_new_character(uint32_t ch, heap_t *heap)
+object_new_bool (bool value, heap_t *heap)
 {
-    return object_new(OBJ_Character, (void *)(uintptr_t)ch, heap);
+  return object_new (OBJ_Bool, (void *)&value, heap);
 }
 
 object_t *
-object_new_symbol(const uint8_t *utf8, heap_t *heap)
+object_new_character (uint32_t ch, heap_t *heap)
 {
-    uint8_t *dup = strdup((const char *)utf8);
-    return object_new(OBJ_Symbol, dup, heap);
+  return object_new (OBJ_Character, (void *)(uintptr_t)ch, heap);
 }
 
 object_t *
-object_new_string(const uint8_t *utf8, heap_t *heap)
+object_new_symbol (const uint8_t *utf8, heap_t *heap)
 {
-    uint8_t *dup = strdup((const char *)utf8);
-    return object_new(OBJ_String, dup, heap);
+  uint8_t *dup = strdup ((const char *)utf8);
+  return object_new (OBJ_Symbol, dup, heap);
 }
 
 object_t *
-object_new_label(const uint8_t *utf8, heap_t *heap)
+object_new_string (const uint8_t *utf8, heap_t *heap)
 {
-    uint8_t *dup = strdup((const char *)utf8);
-    return object_new(OBJ_Label, dup, heap);
+  uint8_t *dup = strdup ((const char *)utf8);
+  return object_new (OBJ_String, dup, heap);
 }
 
 object_t *
-object_new_synobj(object_t *val, heap_t *heap)
+object_new_label (const uint8_t *utf8, heap_t *heap)
 {
-    return object_new(OBJ_Synobj, val, heap);
+  uint8_t *dup = strdup ((const char *)utf8);
+  return object_new (OBJ_Label, dup, heap);
 }
 
 object_t *
-object_new_nil(heap_t *heap)
+object_new_synobj (object_t *val, heap_t *heap)
 {
-    return object_new(OBJ_Nil, NULL, heap);
+  return object_new (OBJ_Synobj, val, heap);
 }
 
+object_t *
+object_new_nil (heap_t *heap)
+{
+  return object_new (OBJ_Nil, NULL, heap);
+}
