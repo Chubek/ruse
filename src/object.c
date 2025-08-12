@@ -58,6 +58,8 @@ object_new (objtype_t type, void *value)
     case OBJ_Formal:
       obj->v_formal = (formal_t *)value;
       break;
+    case OBJ_Conti:
+      obj->v_conti = (conti_t *)value;
     default:
       break;
     }
@@ -122,6 +124,13 @@ object_delete (object_t *obj)
       object_delete (obj->v_closure->body);
       free (obj->v_closure);
       break;
+    case OBJ_Conti:
+      for (object_t *o = obj->v_conti->captured_stack; o;)
+        {
+          object_t *next = o->next;
+          object_delete (o);
+          o = next;
+        }
     case OBJ_Procedure:
       object_delete (obj->v_procedure->value);
 
