@@ -221,8 +221,8 @@ object_t *object_new_complex (double complex value, heap_t *heap);
 object_t *object_new_bool (bool value, heap_t *heap);
 object_t *object_new_character (uint32_t ch, heap_t *heap);
 
-object_t *object_new_string (const uint8_t *utf8, heap_t *heap);
-object_t *object_new_label (const uint8_t *utf8, heap_t *heap);
+object_t *object_new_string (const uint8_t *str, size_t str_len, heap_t *heap);
+object_t *object_new_label (const uint8_t *lbl, size_t lbl_len, heap_t *heap);
 
 object_t *object_new_synobj (object_t *val, heap_t *heap);
 object_t *object_new_nil (heap_t *heap);

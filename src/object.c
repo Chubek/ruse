@@ -427,16 +427,16 @@ object_new_synobj (object_t *datum, object_t *env, heap_t *heap)
 }
 
 object_t *
-object_new_string (const uint8_t *utf8, heap_t *heap)
+object_new_string (const uint8_t *str, size_t str_len, heap_t *heap)
 {
-  uint8_t *dup = strdup ((const char *)utf8);
+  uint8_t *dup = strndup ((const char *)utf8, str_len);
   return object_new (OBJ_String, dup, heap);
 }
 
 object_t *
-object_new_label (const uint8_t *utf8, heap_t *heap)
+object_new_label (const uint8_t *lbl, size_t lbl_len, heap_t *heap)
 {
-  uint8_t *dup = strdup ((const char *)utf8);
+  uint8_t *dup = strndup ((const char *)utf8, lbl_len);
   return object_new (OBJ_Label, dup, heap);
 }
 
