@@ -1,22 +1,18 @@
 #include "memory.h"
 
 void
-gc_collect (environ_t *env)
+heap_collect (heap_t *heap)
 {
-  for (size_t i = 0; i < env->size; i++)
-    {
-      entry_t *e = env->entires[i];
-      while (e)
-        {
-          gc_mark (e->value);
-          gc_sweep (e->value);
-          e = e->next;
-        }
-    }
+  gc_mark (heap->local_stack);
+  gc_mark (heap->global_roots);
+  gc_mark (heap->curr_env_chain);
+  gc_mark (heap->curr_conti);
+
+  gc_sweep (heap->pool);
 }
 
 void
-gc_mark (object_t *obj)
+heap_mark (object_t *obj)
 {
   if (!obj)
     return;
@@ -25,12 +21,16 @@ gc_mark (object_t *obj)
   switch (obj->type)
     {
     case OBJ_Pair:
-      gc_mark (obj->v_pair->first);
-      gc_mark (obj->v_pair->rest);
+      heap_mark (obj->v_pair->first);
+      heap_mark (obj->v_pair->rest);
       break;
     case OBJ_Vector:
-      for (size_t i = 0; i < obj->v_vector->size; i++)
-        gc_mark (obj->v_vector->vals[i]);
+      for (size_t i = 0; i < obj->v_vector->count; i++)
+        heap_mark (obj->v_vector->vals[i]);
+      break;
+    case OBJ_Stack:
+      for (size_t i = 0; i < obj->v_stack->count; i++)
+        heap_mark (obj->v_stack->objs[i]);
       break;
     case OBJ_Environ:
       for (size_t i = 0; i obj->v_environ->size; i++)
@@ -40,8 +40,8 @@ gc_mark (object_t *obj)
               if (!e)
                 continue;
 
-              gc_mark (e->key);
-              gc_mark (e->value);
+              heap_mark (e->key);
+              heap_mark (e->value);
             }
         }
       break;
@@ -49,11 +49,11 @@ gc_mark (object_t *obj)
       break;
     }
 
-  gc_mark (next);
+  heap_mark (next);
 }
 
 void
-gc_sweep (object_t *obj)
+heap_sweep (object_t *obj)
 {
   if (!obj)
     return;
@@ -63,34 +63,6 @@ gc_sweep (object_t *obj)
     object_delete (obj);
   else
     obj->marked = false;
-  gc_sweep (next);
+  heap_sweep (next);
 }
 
-heap_t *
-heap_new (void)
-{
-  heap_t *heap = malloc (sizeof (heap_t));
-  heap->roots = calloc (INIT_ROOTS_SIZE, sizeof (uintptr_t));
-  heap->size = INIT_ROOTS_SIZE;
-  heap->count = 0;
-
-  return heap;
-}
-
-void
-heap_delete (heap_t *heap)
-{
-  free (heap->roots);
-  free (heap);
-}
-
-void
-heap_add_root (heap_t *heap, object_t *root)
-{
-  if (heap->count / heap->size >= COLL_GROWTH_RATE)
-    {
-      heap->size *= 1.5;
-      heap->roots = realloc (heap->roots, heap->size);
-    }
-  heap->roots[heap->count++] = root;
-}
