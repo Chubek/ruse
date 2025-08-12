@@ -146,10 +146,6 @@ struct Object
   object_t *next, *tail;
 };
 
-void environ_grow_if_should (environ_t **envp);
-void environ_insert (environ_t *env, object_t *key, object_t *value);
-object_t *environ_retrieve (environ_t *env, object_t *key);
-void environ_delete (environ_t *env, object_t *key);
 
 object_t *object_new (objtype_t type, void *value);
 void object_append (object_t *head, object_t *newobj);
