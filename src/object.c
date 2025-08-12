@@ -75,7 +75,7 @@ object_new (objtype_t type, void *value, heap_t *heap)
       break;
     }
 
-  heap_add_to_pool (heap, obj);
+  heap_add_root (heap, obj);
   return obj;
 }
 
