@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <uchar.h>
 
+#include "heap.h"
+
 #define MAX_PRIM_NAME 16
 
 typedef struct Object object_t;
@@ -164,10 +166,45 @@ struct Object
   object_t *next, *tail;
 };
 
-object_t *object_new (objtype_t type, void *value);
+object_t *object_new (objtype_t type, void *value, heap_t *heap);
 void object_append (object_t *head, object_t *newobj);
 void object_delete (object_t *obj);
 uint32_t object_hash (object_t *obj);
 bool object_equals (object_t *obj1, object_t *obj2);
+
+object_t *object_new_pair(object_t *first, object_t *rest, heap_t *heap);
+object_t *object_new_port(const char *path, bool read, bool write,
+                          bool append, bool binary, heap_t *heap);
+object_t *object_new_closure(object_t *formals, object_t *env,
+                             object_t *body, heap_t *heap);
+
+object_t *object_new_environ(size_t size, heap_t *heap);
+
+object_t *object_new_vector(size_t size, heap_t *heap);
+object_t *object_new_bytevector(size_t size, heap_t *heap);
+
+object_t *object_new_procedure(bool closure, object_t *value, heap_t *heap);
+object_t *object_new_formal(bool varargs, bool ellipses,
+                            object_t *value, heap_t *heap);
+
+object_t *object_new_builtin(const char *name, primfn_t fn, heap_t *heap);
+
+object_t *object_new_conti(object_t *captured_stack, heap_t *heap);
+
+object_t *object_new_stack(size_t size, heap_t *heap);
+
+object_t *object_new_integer(intmax_t value, heap_t *heap);
+object_t *object_new_real(double value, heap_t *heap);
+object_t *object_new_complex(double complex value, heap_t *heap);
+object_t *object_new_bool(bool value, heap_t *heap);
+object_t *object_new_character(uint32_t ch, heap_t *heap);
+
+object_t *object_new_symbol(const uint8_t *utf8, heap_t *heap);
+object_t *object_new_string(const uint8_t *utf8, heap_t *heap);
+object_t *object_new_label(const uint8_t *utf8, heap_t *heap);
+
+object_t *object_new_synobj(object_t *val, heap_t *heap);
+object_t *object_new_nil(heap_t *heap);
+
 
 #endif
