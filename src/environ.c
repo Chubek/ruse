@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "object.h"
 
 #define ENVIRON_GROWTH_FACTOR 0.65
@@ -32,9 +35,7 @@ void
 environ_insert (environ_t *env, object_t *key, object_t *value)
 {
   environ_grow_if_should (&env);
-  uint32_t hash = object_hash (key);
-  if (hash >= env->size)
-    raise_runtime_error ("Object hash for insertion larger than table size");
+  uint32_t hash = object_hash (key) % env->size;
 
   entry_t *bucket = env->entries[hash], *e;
   for (e = bucket; e->next; e = e->next)
@@ -55,9 +56,7 @@ environ_insert (environ_t *env, object_t *key, object_t *value)
 object_t *
 environ_retrieve (environ_t *env, object_t *key)
 {
-  uint32_t hash = object_hash (key);
-  if (hash >= env->size)
-    raise_runtime_error ("Object hash for retrieval larger than table size");
+  uint32_t hash = object_hash (key) % env->size;
 
   entry_t *bucket = env->entries[hash], *e;
   for (e = bucket; e && !object_equals (e->key, key); e = e->next)
