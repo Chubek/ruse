@@ -198,14 +198,30 @@ object_hash (object_t *obj)
   if (obj->hash)
     return obj->hash;
 
-  if (obj->type == OBJ_String || obj->type == OBJ_Symbol
-      || obj->type == OBJ_Lable)
-    obj->hash = fnv1b_hash32 (obj->v_buffz) + 1;
-  else if (obj->type == OBJ_Real || obj->type == OBJ_Integer
-           || obj->type == OBJ_Complex)
-    obj->hash = splitmax_hash32 (obj->v_integer) + 1;
-  else
-    raise_runtime_error ("Unhashable object");
+  switch (obj->type)
+    {
+    case OBJ_String:
+    case OBJ_Label:
+      obj->hash = fnv1a_hash32 (obj->v_buffz) + 1;
+      break;
+    case OBJ_Symbol:
+      obj->hash = fnv1a_hash32 (obj->v_symbol->id) + obj->v_symbol->mark;
+      break;
+    case OBJ_Integer:
+      obj->hash = splitmax_int_hash32 (obj->v_integer) + 1;
+      break;
+    case OBJ_Real:
+      obj->hash = splitmax_real_hash32 (obj->v_real) + 1;
+      break;
+    case OBJ_Complex:
+      obj->hash = splitmax_complex_hash32 (obj->v_complex) + 1;
+      break;
+    case OBJ_Bool:
+      obj->hash = obj->v_bool + 2;
+      break;
+    default:
+      raise_runtime_error ("Object cannot be hashed");
+    }
 
   return obj->hash;
 }
@@ -289,7 +305,7 @@ object_t *
 object_new_environ (size_t size, heap_t *heap)
 {
   environ_t *env = malloc (sizeof (environ_t));
-  env->entries = calloc (size, sizeof (entry_t)); // table of entries
+  env->entries = calloc (size, sizeof (entry_t));
   env->size = size;
   env->count = 0;
   return object_new (OBJ_Environ, env, heap);
