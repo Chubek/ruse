@@ -1,9 +1,11 @@
 #include "object.h"
 
+#define ENVIRON_GROWTH_FACTOR 0.65
+
 void
 environ_grow_if_should (environ_t **envp)
 {
-  if ((*envp)->count / (*envp)->size <= COLL_GROWTH_RATE)
+  if ((*envp)->count / (*envp)->size <= ENVIRON_GROWTH_RATE)
     return;
 
   environ_t *new_env = malloc (sizeof (environ_t));
