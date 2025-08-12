@@ -82,6 +82,7 @@ object_delete (object_t *obj)
   if (!obj)
     return;
 
+  object_t *next = obj->next;
   switch (obj->type)
     {
     case OBJ_Nil:
@@ -163,6 +164,7 @@ object_delete (object_t *obj)
     }
 
   free (obj);
+  object_delete (next);
 }
 
 void
