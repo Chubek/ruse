@@ -23,6 +23,7 @@ typedef struct Procedure procedure_t;
 typedef struct Entry entry_t;
 typedef struct Formal formal_t;
 typedef struct Builtin builtin_t;
+typedef struct Conti conti_t;
 
 typedef object_t *(*primfn_t) (object_t *args, object_t *env);
 
@@ -97,6 +98,11 @@ struct Formal
   object_t *value;
 };
 
+struct Conti
+{
+   object_t *captured_stack;
+};
+
 struct Object
 {
   enum ObjectType
@@ -118,6 +124,7 @@ struct Object
     OBJ_Character,
     OBJ_Procedure,
     OBJ_Closure,
+    OBJ_Conti,
     OBJ_Builtin,
     OBJ_Formal,
   } type;
@@ -133,6 +140,7 @@ struct Object
     formal_t *v_formal;
     builtin_t *v_builtin;
     closure_t *v_closure;
+    conti_t *v_conti;
 
     intmax_t v_integer;
     double v_real;
