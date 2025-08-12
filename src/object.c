@@ -5,6 +5,7 @@
 #include "object.h"
 
 #define STACK_GROWTH_FACTOR 0.85
+#define ENVIRON_GROWTH_FACTOR 0.75
 
 object_t *
 object_new (objtype_t type, void *value, heap_t *heap)
@@ -302,12 +303,13 @@ object_new_closure (object_t *formals, object_t *env, object_t *body,
 }
 
 object_t *
-object_new_environ (size_t size, heap_t *heap)
+object_new_environ (environ_t *parent, size_t size, heap_t *heap)
 {
   environ_t *env = malloc (sizeof (environ_t));
   env->entries = calloc (size, sizeof (entry_t));
   env->size = size;
   env->count = 0;
+  env->parent = parent;
   return object_new (OBJ_Environ, env, heap);
 }
 
@@ -469,4 +471,101 @@ stack_pop (stack_t *stk)
   if (stk->count == 0)
     raise_runtime_error ("Stack underflow");
   return stk->objs[--stk->count];
+}
+
+void
+environ_install (environ_t *env, object_t *key, object_t *value)
+{
+  if (env->count / env->size >= ENVIRON_GROWTH_FACTOR)
+    {
+      environ_t *new_env = malloc (sizeof (environ_t));
+      new_env->entries = calloc (env->size * 2, sizeof (entry_t));
+      new_env->size = env->size * 2;
+      new_env->count = 0;
+      new_env->parent = env->parent;
+
+      for (size_t i = 0; i < env->size; i++)
+        {
+          entry_t *e = env->entries[i];
+          while (e)
+            {
+              environ_install (new_env, e->key, e->value);
+              e = e->next;
+            }
+        }
+
+      environ_t **envp = &env;
+      free (env->entries);
+      free (env);
+      *envp = new_env;
+    }
+
+  uint32_t idx = object_hash (key) % env->size;
+
+  entry_t *e = env->entries[idx];
+  while (e->next)
+    {
+      if (object_equals (e->key, key))
+        {
+          e->value = value;
+          return;
+        }
+      e = e->next;
+    }
+
+  e->next = malloc (sizeof (entry_t));
+  e->next->key = key;
+  e->next->value = value;
+  e->next->next = NULL;
+}
+
+object_t *
+environ_retrieve (environ_t *env, object_t *key)
+{
+  if (!env)
+    return NULL;
+
+  uint32_t idx = object_hash (key) % env->size;
+
+  entry_t *e = env->entries[idx];
+  object_t *found = NULL;
+  while (e)
+    {
+      if (object_equals (e->key, key))
+        {
+          found = e->value;
+          break;
+        }
+      e = e->next;
+    }
+
+  return found ? found : environ_retrieve (env->parent, key);
+}
+
+void
+environ_delete (environ_t *env, object_t *key)
+{
+  if (!env)
+    return;
+
+  uint32_t idx = object_hash (key) % env->size;
+
+  entry_t *e, *e_prev;
+  bool deleted = false;
+
+  for (e = env->entries[i]; e; e_prev = e, e = e->next)
+    if (object_equals (e->key, key))
+      break;
+
+  if (!e)
+    environ_delete (env, key);
+  else if (e_prev == e->next)
+    {
+      object_t **ep = &e;
+      *ep = NULL;
+    }
+  else
+    {
+      e_prev->next = e->next;
+    }
 }

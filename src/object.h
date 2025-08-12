@@ -67,6 +67,7 @@ struct Environ
   } *entries;
   size_t size;
   size_t count;
+  environ_t *parent;
 };
 
 struct Vector
@@ -197,7 +198,7 @@ object_t *object_new_port (const char *path, bool read, bool write,
 object_t *object_new_closure (object_t *formals, object_t *env, object_t *body,
                               heap_t *heap);
 
-object_t *object_new_environ (size_t size, heap_t *heap);
+object_t *object_new_environ (environ_t *parent, size_t size, heap_t *heap);
 
 object_t *object_new_vector (size_t size, heap_t *heap);
 object_t *object_new_bytevector (size_t size, heap_t *heap);
@@ -229,5 +230,9 @@ object_t *object_new_nil (heap_t *heap);
 
 void stack_push (stack_t *stk, object_t *obj);
 stack_t *stack_pop (stack_t *stk);
+
+void environ_install (environ_t *env, object_t *key, object_t *value);
+object_t *environ_retrieve (environ_t *env, environ_t *key);
+void environ_delete (environ_t *env, object_t *key);
 
 #endif
