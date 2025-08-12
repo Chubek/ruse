@@ -159,6 +159,7 @@ struct Object
     double complex v_complex;
     const uint8_t *v_buffz;
     bool v_bool;
+    char32_t v_char;
   };
 
   uint32_t hash;

@@ -37,6 +37,9 @@ object_new (objtype_t type, void *value, heap_t *heap)
     case OBJ_Bool:
       memmove (&obj->v_bool, value, sizeof (bool));
       break;
+    case OBJ_Character:
+      memmove (&obj->v_char, value, sizeof (char32_t));
+      break;
     case OBJ_Vector:
       obj->v_vector = (vector_t *)value;
       break;
@@ -371,9 +374,9 @@ object_new_bool (bool value, heap_t *heap)
 }
 
 object_t *
-object_new_character (uint32_t ch, heap_t *heap)
+object_new_character (char32_t ch, heap_t *heap)
 {
-  return object_new (OBJ_Character, (void *)(uintptr_t)ch, heap);
+  return object_new (OBJ_Character, (void *)&ch, heap);
 }
 
 object_t *
