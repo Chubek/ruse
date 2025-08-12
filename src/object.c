@@ -4,6 +4,8 @@
 #include "heap.h"
 #include "object.h"
 
+#define STACK_GROWTH_FACTOR 0.85
+
 object_t *
 object_new (objtype_t type, void *value, heap_t *heap)
 {
@@ -261,10 +263,6 @@ object_new_closure (object_t *formals, object_t *env, object_t *body,
   return object_new (OBJ_Closure, (void *)closure, heap);
 }
 
-#include "object.h"
-#include <stdlib.h>
-#include <string.h>
-
 object_t *
 object_new_environ (size_t size, heap_t *heap)
 {
@@ -403,4 +401,23 @@ object_t *
 object_new_nil (heap_t *heap)
 {
   return object_new (OBJ_Nil, NULL, heap);
+}
+
+void
+stack_push (stack_t *stk, object_t *obj)
+{
+  if (stk->count / stk->size >= STACK_GROWTH_FACTOR)
+    {
+      stk->size *= 2;
+      stk->objs = realloc (stk->objs, stk->size * sizeof (object_t *));
+    }
+  stk->objs[stk->count++] = obj;
+}
+
+object_t *
+stack_pop (stack_t *stk)
+{
+  if (stk->count == 0)
+    raise_runtime_error ("Stack underflow");
+  return stk->objs[--stk->count];
 }
