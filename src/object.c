@@ -558,7 +558,7 @@ environ_delete (environ_t *env, object_t *key)
       break;
 
   if (!e)
-    environ_delete (env, key);
+    environ_delete (env->parent, key);
   else if (!e->next)
     {
       object_t **ep = &e;
