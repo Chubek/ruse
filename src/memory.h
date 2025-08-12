@@ -14,6 +14,7 @@ typedef struct Heap
   object_t *global_roots;
   object_t *curr_env_chain;
   object_t *curr_conti;
+  object_t *pool;
 } heap_t;
 
 void heap_collect (heap_t *heap);
