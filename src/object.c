@@ -155,6 +155,11 @@ object_delete (object_t *obj)
       object_delete (obj = > v_pair->rest);
       free (obj->v_pair);
       break;
+    case OBJ_Stack:
+      for (size_t i = 0; i < obj->v_stack->count; i++)
+        object_delete (obj->v_stack->objs[i]);
+      free (obj->v_stack->objs);
+      free (obj->v_stack);
     }
 
   free (obj);
