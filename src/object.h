@@ -24,6 +24,7 @@ typedef struct Entry entry_t;
 typedef struct Formal formal_t;
 typedef struct Builtin builtin_t;
 typedef struct Conti conti_t;
+typedef struct Stack stack_t;
 
 typedef object_t *(*primfn_t) (object_t *args, object_t *env);
 
@@ -100,7 +101,14 @@ struct Formal
 
 struct Conti
 {
-   object_t *captured_stack;
+  object_t *captured_stack;
+};
+
+struct Stack
+{
+  object_t **objs;
+  size_t size;
+  size_t count;
 };
 
 struct Object
@@ -125,6 +133,7 @@ struct Object
     OBJ_Procedure,
     OBJ_Closure,
     OBJ_Conti,
+    OBJ_Stack,
     OBJ_Builtin,
     OBJ_Formal,
   } type;
@@ -141,6 +150,7 @@ struct Object
     builtin_t *v_builtin;
     closure_t *v_closure;
     conti_t *v_conti;
+    stack_t *v_stack;
 
     intmax_t v_integer;
     double v_real;
@@ -153,7 +163,6 @@ struct Object
   bool marked;
   object_t *next, *tail;
 };
-
 
 object_t *object_new (objtype_t type, void *value);
 void object_append (object_t *head, object_t *newobj);
