@@ -553,16 +553,16 @@ environ_delete (environ_t *env, object_t *key)
   entry_t *e, *e_prev;
   bool deleted = false;
 
-  for (e = env->entries[i]; e; e_prev = e, e = e->next)
+  for (e = env->entries[idx]; e; e_prev = e, e = e->next)
     if (object_equals (e->key, key))
       break;
 
   if (!e)
     environ_delete (env->parent, key);
-  else if (!e->next)
+  else if (e == env->entries[idx])
     {
       object_t **ep = &e;
-      *ep = NULL;
+      *ep = e->next;
     }
   else
     {
