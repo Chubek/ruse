@@ -3,11 +3,13 @@
 
 #include "memory.h"
 
+#define HEAP_GROWTH_FACTOR 0.88
+
 heap_t *
 heap_new (size_t size)
 {
   heap_t *heap = malloc (sizeof (heap_t));
-  heap->pool = calloc (size, sizeof (object_t *));
+  heap->roots = calloc (size, sizeof (object_t *));
   heap->size = size;
   heap->count = 0;
   return heap;
@@ -16,30 +18,28 @@ heap_new (size_t size)
 void
 heap_delete (heap_t *heap)
 {
-  free (heap->pool);
+  free (heap->roots);
   free (heap);
 }
 
 void
-heap_add_to_pool (heap_t *heap, object_t *obj)
+heap_add_root (heap_t *heap, object_t *obj)
 {
   if (heap->count / heap->size >= HEAP_GROWTH_FACTOR)
     {
       heap->size *= 2;
-      heap->pool = realloc (heap->pool, heap->size * sizeof (object_t *));
+      heap->roots = realloc (heap->roots, heap->size * sizeof (object_t *));
     }
-  heap->pool[heap->count++] = obj;
+  heap->roots[heap->count++] = obj;
 }
 
 void
 heap_collect (heap_t *heap)
 {
-  gc_mark (heap->local_stack);
-  gc_mark (heap->global_roots);
-  gc_mark (heap->curr_env_chain);
-  gc_mark (heap->curr_conti);
-
-  gc_sweep (heap->pool);
+  for (size_t i = 0; i < heap->roots_count; i++)
+    gc_mark (heap->roots[i]);
+  for (size_t i = 0; i < heap->roots_count; i++)
+    gc_sweep (heap->roots[i]);
 }
 
 void
