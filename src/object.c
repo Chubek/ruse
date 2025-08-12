@@ -559,7 +559,7 @@ environ_delete (environ_t *env, object_t *key)
 
   if (!e)
     environ_delete (env, key);
-  else if (e_prev == e->next)
+  else if (!e->next)
     {
       object_t **ep = &e;
       *ep = NULL;
