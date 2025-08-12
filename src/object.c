@@ -60,6 +60,8 @@ object_new (objtype_t type, void *value)
       break;
     case OBJ_Conti:
       obj->v_conti = (conti_t *)value;
+    case OBJ_Stack:
+      obj->v_stack = (stack_t *)value;
     default:
       break;
     }
@@ -125,22 +127,26 @@ object_delete (object_t *obj)
       free (obj->v_closure);
       break;
     case OBJ_Conti:
-      for (object_t *o = obj->v_conti->captured_stack; o;)
-        {
-          object_t *next = o->next;
-          object_delete (o);
-          o = next;
-        }
+      object_delete (obj->v_conti->captured_stack);
+      free (obj->v_conti);
+      break;
+    case OBJ_Stack:
+      for (size_t i = 0; i < obj->v_stack->count; i++)
+        object_delete (obj->v_stack->objs[i]);
+      free (obj->v_stack);
+      break;
     case OBJ_Procedure:
       object_delete (obj->v_procedure->value);
-
+      free (obj->v_procedure);
       break;
     case OBJ_Port:
       fclose (obj->v_port->stream);
       object_delete (obj->v_port);
+      free (obj->v_port);
     case OBJ_Pair:
       object_delete (obj->v_pair->first);
       object_delete (obj = > v_pair->rest);
+      free (obj->v_pair);
       break;
     }
 
