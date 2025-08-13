@@ -251,8 +251,8 @@ builtin_quotient (object_t *args, object_t *env)
 object_t *
 builtin_modulo (object_t *args, object_t *env)
 {
-  if (!args)
-    return object_new_integer (0, current_heap);
+  if (!args || !args->next || args->next->next)
+    raise_runtime_error ("Modulo takes 2 arguments");
 
   promotion_t promotion = assess_promotion (args, "Modulo");
   if (promotion != PROMOTED_TO_NONE)
@@ -272,8 +272,8 @@ builtin_modulo (object_t *args, object_t *env)
 object_t *
 builtin_remainder (object_t *args, object_t *env)
 {
-  if (!args)
-    return object_new_integer (0, current_heap);
+  if (!args || !args->next || !args->next->next)
+    raise_runtime_error ("Remainder takes two arguments");
 
   promotion_t promotion = assess_promotion (args, "Remainder");
   if (promotion != PROMOTED_TO_NONE)
@@ -290,4 +290,179 @@ builtin_remainder (object_t *args, object_t *env)
   intmax_t result = (imaxabs (dividend) % imaxabs (divisor)) * sign;
 
   return object_new_integer (result, current_heap);
+}
+
+object_t *
+builtin_nums_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next || !args->next->next)
+    raise_runtime_error ("= takes at least two arguments");
+
+  bool result = false;
+  for (object_t *a = args; a; a = a->next)
+    {
+      for (object_t *b = args->next; b; b = b->next)
+        {
+          if (a->type != b->type)
+            {
+              result = false;
+              goto RET;
+            }
+          switch (a->type)
+            {
+            case OBJ_Integer:
+              result = a->v_integer == b->v_integer;
+              continue;
+            case OBJ_Real:
+              result = a->v_real == b->v_real;
+              continue;
+            case OBJ_Complex:
+              result = a->v_complex == b->v_complex;
+              continue;
+            }
+        }
+    }
+
+RET:
+  return object_new_bool (result, current_heap);
+}
+
+object_t *
+builtin_nums_greater (object_t *args, object_t *env)
+{
+  if (!args || !args->next || !args->next->next)
+    raise_runtime_error ("> takes at least two arguments");
+
+  bool result = false;
+  for (object_t *a = args; a; a = a->next)
+    {
+      for (object_t *b = args->next; b; b = b->next)
+        {
+          if (a->type != b->type)
+            {
+              result = false;
+              goto RET;
+            }
+          switch (a->type)
+            {
+            case OBJ_Integer:
+              result = a->v_integer > b->v_integer;
+              continue;
+            case OBJ_Real:
+              result = a->v_real > b->v_real;
+              continue;
+            case OBJ_Complex:
+              result = a->v_complex > b->v_complex;
+              continue;
+            }
+        }
+    }
+
+RET:
+  return object_new_bool (result, current_heap);
+}
+
+object_t *
+builtin_nums_greater_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next || !args->next->next)
+    raise_runtime_error (">= takes at least two arguments");
+
+  bool result = false;
+  for (object_t *a = args; a; a = a->next)
+    {
+      for (object_t *b = args->next; b; b = b->next)
+        {
+          if (a->type != b->type)
+            {
+              result = false;
+              goto RET;
+            }
+          switch (a->type)
+            {
+            case OBJ_Integer:
+              result = a->v_integer >= b->v_integer;
+              continue;
+            case OBJ_Real:
+              result = a->v_real >= b->v_real;
+              continue;
+            case OBJ_Complex:
+              result = a->v_complex >= b->v_complex;
+              continue;
+            }
+        }
+    }
+
+RET:
+  return object_new_bool (result, current_heap);
+}
+
+object_t *
+builtin_nums_lesser (object_t *args, object_t *env)
+{
+  if (!args || !args->next || !args->next->next)
+    raise_runtime_error ("< takes at least two arguments");
+
+  bool result = false;
+  for (object_t *a = args; a; a = a->next)
+    {
+      for (object_t *b = args->next; b; b = b->next)
+        {
+          if (a->type != b->type)
+            {
+              result = false;
+              goto RET;
+            }
+          switch (a->type)
+            {
+            case OBJ_Integer:
+              result = a->v_integer < b->v_integer;
+              continue;
+            case OBJ_Real:
+              result = a->v_real < b->v_real;
+              continue;
+            case OBJ_Complex:
+              result = a->v_complex < b->v_complex;
+              continue;
+            }
+        }
+    }
+
+RET:
+  return object_new_bool (result, current_heap);
+}
+
+object_t *
+builtin_nums_lesser_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next || !args->next->next)
+    raise_runtime_error ("<= takes at least two arguments");
+
+  bool result = false;
+  for (object_t *a = args; a; a = a->next)
+    {
+      for (object_t *b = args->next; b; b = b->next)
+        {
+          if (a->type != b->type)
+            {
+              result = false;
+              goto RET;
+            }
+          switch (a->type)
+            {
+            case OBJ_Integer:
+              result = a->v_integer <= b->v_integer;
+              continue;
+            case OBJ_Real:
+              result = a->v_real <= b->v_real;
+              continue;
+            case OBJ_Complex:
+              result = a->v_complex <= b->v_complex;
+              continue;
+            }
+        }
+    }
+
+RET:
+  return object_new_bool (result, current_heap);
 }
