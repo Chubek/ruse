@@ -251,7 +251,7 @@ builtin_quotient (object_t *args, object_t *env)
 object_t *
 builtin_modulo (object_t *args, object_t *env)
 {
-  if (!args || !args->next || args->next->next)
+  if (!args || !args->next)
     raise_runtime_error ("Modulo takes 2 arguments");
 
   promotion_t promotion = assess_promotion (args, "Modulo");
@@ -272,7 +272,7 @@ builtin_modulo (object_t *args, object_t *env)
 object_t *
 builtin_remainder (object_t *args, object_t *env)
 {
-  if (!args || !args->next || !args->next->next)
+  if (!args || !args->next)
     raise_runtime_error ("Remainder takes two arguments");
 
   promotion_t promotion = assess_promotion (args, "Remainder");
@@ -295,7 +295,7 @@ builtin_remainder (object_t *args, object_t *env)
 object_t *
 builtin_nums_equal (object_t *args, object_t *env)
 {
-  if (!args || !args->next || !args->next->next)
+  if (!args || !args->next)
     raise_runtime_error ("= takes at least two arguments");
 
   promotion_t _ = assess_promotion (args, "=");
@@ -320,7 +320,7 @@ builtin_nums_equal (object_t *args, object_t *env)
               continue;
             case OBJ_Complex:
               result = a->v_complex == b->v_complex;
-          i    continue;
+              i continue;
             }
         }
     }
@@ -332,7 +332,7 @@ RET:
 object_t *
 builtin_nums_greater (object_t *args, object_t *env)
 {
-  if (!args || !args->next || !args->next->next)
+  if (!args || !args->next)
     raise_runtime_error ("> takes at least two arguments");
 
   promotion_t _ = assess_promotion (args, ">");
@@ -369,7 +369,7 @@ RET:
 object_t *
 builtin_nums_greater_equal (object_t *args, object_t *env)
 {
-  if (!args || !args->next || !args->next->next)
+  if (!args || !args->next)
     raise_runtime_error (">= takes at least two arguments");
 
   promotion_t _ = assess_promotion (args, ">=");
@@ -406,7 +406,7 @@ RET:
 object_t *
 builtin_nums_lesser (object_t *args, object_t *env)
 {
-  if (!args || !args->next || !args->next->next)
+  if (!args || !args->next)
     raise_runtime_error ("< takes at least two arguments");
 
   promotion_t _ = assess_promotion (args, "<");
@@ -443,7 +443,7 @@ RET:
 object_t *
 builtin_nums_lesser_equal (object_t *args, object_t *env)
 {
-  if (!args || !args->next || !args->next->next)
+  if (!args || !args->next)
     raise_runtime_error ("<= takes at least two arguments");
 
   promotion_t _ = assess_promotion (args, "<=");
@@ -475,4 +475,53 @@ builtin_nums_lesser_equal (object_t *args, object_t *env)
 
 RET:
   return object_new_bool (result, current_heap);
+}
+
+object_t *
+builtin_eq (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("eq? requires two arguments");
+
+  bool result = (args == args->next);
+  return object_new_bool (result, current_heap);
+}
+
+object_t *
+builtin_eqv (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtim_error ("eqv? takes two arguments");
+
+  if (args->type == OBJ_Integer || args->type == OBJ_Real
+      || args->type == OBJ_Complex)
+    return builtin_nums_equal (args, env);
+  else if (args->type == OBJ_String || args->type == OBJ_Symbol)
+    return builtin_strings_equal (args, env);
+  else if (args->type == OBJ_Synobj)
+    return builtin_synobjs_equal (args, env);
+  else if (args->type == OBJ_Character)
+    return builtin_characters_equal (args, env);
+  else
+    return builtin_eq (args, env);
+}
+
+object_t *
+builtin_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("equal? takes two argument");
+
+  if (!(args->type == OBJ_Vector || args->type != OBJ_Bytevector
+        || obj->type != OBJ_Pair))
+    return builtin_eqv (args, env);
+
+  if (args->type == OBJ_Vector)
+    return builtin_vectors_equal (args, env);
+  else if (args->type == OBJ_Bytevector)
+    return builtin_bytevectors_equal (args, env);
+  else if (args->type == OBJ_Pair)
+    return builtin_pairs_equal (args, env);
+
+  return NULL;
 }
