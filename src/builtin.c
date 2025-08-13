@@ -1,212 +1,293 @@
 #include <complex.h>
+#include <inttypes.h>
 #include <math.h>
 
 #include "heap.h"
 #include "object.h"
 
+#define PROMOTED_TO_NONE 0
+#define PROMOTED_TO_REAL 1
+#define PROMOTED_TO_COMPLEX 2
+
+typedef int promotion_t;
+
 extern heap_t *current_heap;
+
+static inline promotion_t
+assess_promotion (object_t *args, const char *fnname)
+{
+
+  promotion_t promotion = PROMOTED_TO_NONE;
+  for (object_t *a = args; a; a = a->next)
+    {
+      switch (a->type)
+        {
+        case OBJ_Integer:
+          continue;
+        case OBJ_Real:
+          if (promotion < PROMOTED_TO_REAL)
+            promotion = PROMOTED_TO_REAL;
+          continue;
+        case OBJ_Complex:
+          if (promotion < PROMOTED_TO_COMPLEX)
+            promotion = PROMOTED_TO_COMPLEX;
+          break;
+        default:
+          raise_runtime_error ("%s only works on numeric values", fnname);
+          break;
+        }
+    }
+
+  return promotion;
+}
 
 object_t *
 builtin_add (object_t *args, object_t *env)
 {
-  double complex result = 0.0;
-  for (object_t *a = args; a; a = a->next)
+  if (!args)
+    return object_new_integer (0, current_heap);
+
+  promotion_t promotion = assess_promotion (args, "Addition");
+
+  switch (promotion)
     {
-      switch (a->type)
+    case PROMOTED_TO_NONE:
+      intmax_t result = 0;
+      for (object_t *a = args; a; a = a->next)
+        result += a->v_integer;
+      return object_new_integer (result, current_heap);
+    case PROMOTED_TO_REAL:
+      double result = 0.0;
+      for (object_t *a = args; a; a = a->next)
         {
-        case OBJ_Integer:
-          result += a->v_integer;
-          continue;
-        case OBJ_Real:
-          result += a->v_real;
-          continue;
-        case OBJ_Complex:
-          result += a->v_complex;
-          continue;
-        default:
-          raise_runtime_error ("Can only add numeric types together");
-          break;
+          if (a->type == OBJ_Integer)
+            result += a->v_integer;
+          else
+            result += a->v_real;
         }
-    }
-
-  return object_new_complex (result, current_heap);
-}
-
-object_t *
-builtin_sub (object_t *args, object_t *env)
-{
-  double complex result = 0.0;
-  bool init = false;
-  for (object_t *a = args; a; a = a->next)
-    {
-      switch (a->type)
+      return object_new_real (result, current_heap);
+    case PROMOTED_TO_COMPLEX:
+      double complex result = 0.0 * I;
+      for (object_t *a = args; a; a = a->next)
         {
-        case OBJ_Integer:
-          if (!init)
-            {
-              result = a->v_integer;
-              init = true;
-              continue;
-            }
-          result -= a->v_integer;
-          continue;
-        case OBJ_Real:
-          if (!init)
-            {
-              result = a->v_real;
-              init = true;
-              continue;
-            }
-          result -= a->v_real;
-          continue;
-        case OBJ_Complex:
-          if (!init)
-            {
-              result = a - v_complex;
-              init = true;
-              continue;
-            }
-          result -= a->v_complex;
-          continue;
-        default:
-          raise_runtime_error ("Can only subtract numeric types together");
-          break;
+          if (a->type == OBJ_Integer)
+            result += a->v_integer;
+          else if (a->type == OBJ_Real)
+            result += a->v_real;
+          else if (a->type == OBJ_Complex)
+            result += a->v_complex;
         }
-    }
-
-  return object_new_complex (result, current_heap);
-}
-
-object_t *
-builtin_mul (object_t *args, object_t *env)
-{
-  double complex result = 1.0;
-  for (object_t *a = args; a; a = a->next)
-    {
-      switch (a->type)
-        {
-        case OBJ_Integer:
-          result *= a->v_integer;
-          continue;
-        case OBJ_Real:
-          result *= a->v_real;
-          continue;
-        case OBJ_Complex:
-          result *= a->v_complex;
-          continue;
-        default:
-          raise_runtime_error ("Can only multiply numeric types together");
-          break;
-        }
-    }
-
-  return object_new_complex (result, current_heap);
-}
-
-object_t *
-builtin_div (object_t *args, object_t *env)
-{
-  if (args->next == NULL)
-    raise_runtime_error ("Division needs a denumerator");
-
-  object_t *num = args;
-  objec_t *denum = args->next;
-  double complex result = 0;
-
-  switch (num->type)
-    {
-    case OBJ_Integer:
-      result = num->v_integer;
-      break;
-    case OBJ_Real:
-      result = num->v_real;
-      break;
-    case OBJ_Complex:
-      result = num->v_complex;
-      break;
+      return object_new_complex (result, current_heap);
     default:
-      raise_runtime_error ("Division only works on numeric values");
-      break;
+      return NULL;
     }
+}
 
-  if (denum->v_integer == 0 || denum->v_real == 0.0 || denum->v_complex == 0.0)
-    raise_runtime_error ("Division by zero");
+object_t *
+builtin_subtract (object_t *args, object_t *env)
+{
+  if (!args)
+    return object_new_integer (0, current_heap);
 
-  switch (denum->type)
+  promotion_t promotion = assess_promotion (args, "Subtraction");
+  switch (promotion)
     {
-    case OBJ_Integer:
-      result /= denum->v_integer;
-      break;
-    case OBJ_Real:
-      result /= denum->v_real;
-      break;
-    case OBJ_Complex:
-      result /= denum->v_complex;
-      break;
+    case PROMOTED_TO_NONE:
+      intmax_t result = args->v_integer;
+      for (object_t *a = args->next; a; a = a->next)
+        result -= a->v_integer;
+      return object_new_integer (result, current_heap);
+    case PROMOTED_TO_REAL:
+      double result = args->v_real;
+      for (object_t *a = args->next; a; a = a->next)
+        {
+          if (a->type == OBJ_Integer)
+            result -= a->v_integer;
+          else
+            result -= a->v_real;
+        }
+      return object_new_real (result, current_heap);
+    case PROMOTED_TO_COMPLEX:
+      double complex result = args->v_complex;
+      for (object_t *a = args->next; a; a = a->next)
+        {
+          if (a->type == OBJ_Integer)
+            result -= a->v_integer;
+          else if (a->type == OBJ_Real)
+            result -= a->v_real;
+          else
+            result -= a->v_complex;
+        }
+      return object_new_complex (result, current_heap);
     default:
-      raise_runtim_error ("Division needs a numeric denumerator");
-      break;
+      return NULL;
+    }
+}
+
+object_t *
+builtin_multiply (object_t *args, object_t *env)
+{
+  promotion_t promotion = assess_promotion (args, "Multiplication");
+  switch (promotion)
+    {
+    case PROMOTED_TO_NONE:
+      intmax_t result = 1;
+      for (object_t *a = args; a; a = a->next)
+        result *= a->v_integer;
+      return object_new_integer (result, current_heap);
+    case ROMOTED_TO_REAL:
+      double result = 1.0;
+      for (object_t *a = args; a; a = a->next)
+        {
+          if (a->type == OBJ_Integer)
+            result *= a->v_integer;
+          else
+            result *= a->v_real;
+        }
+      return object_new_real (result, current_heap);
+    case PROMOTED_TO_COMPLEX:
+      double complex result = 1.0 * I;
+      for (object_t *a = args; a; a = a->next)
+        {
+          if (a->type == OBJ_Integer)
+            result *= a->v_integer;
+          else if (a->type == OBJ_Real)
+            result *= a->v_real;
+          else
+            result *= a->v_complex;
+        }
+      return object_new_complex (result, current_heap);
+    default:
+      return NULL;
+    }
+}
+
+object_t *
+builtin_divide (object_t *args, object_t *env)
+{
+  if (!args)
+    return object_new_integer (0, current_heap);
+
+  promotion_t promotion = assess_promotion (args, "Division");
+  switch (promotion)
+    {
+    case PROMOTED_TO_NONE:
+      intmax_t result = args->v_integer;
+      for (object_t *a = args->next; a; a = a->next)
+        {
+          if (a->v_integer == 0)
+            raise_runtime_error ("Division by zero");
+          result /= a->v_integer;
+        }
+      return object_new_integer (result, current_heap);
+    case PROMOTED_TO_REAL:
+      double result = args->v_real;
+      for (object_t *a = args->next; a; a = a->next)
+        {
+          if (a->type == OBJ_Integer)
+            {
+              if (a->v_integer == 0)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_integer;
+            }
+          else
+            {
+              if (a->v_real == 0.0)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_real;
+            }
+        }
+      return object_new_real (result, current_heap);
+    case PROMOTED_TO_COMPLEX:
+      double complex result = args->v_complex;
+      for (object_t *a = args->next; a; a = a->next)
+        {
+          if (a->type == OBJ_Integer)
+            {
+              if (a->v_integer == 0)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_integer;
+            }
+          else if (a->type == OBJ_Real)
+            {
+              if (a->v_real == 0.0)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_real;
+            }
+          else
+            {
+              if (a->v_complex == 0.0 * I)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_complex;
+            }
+        }
+      return object_new_complex (result, current_heap);
+    default:
+      return NULL;
+    }
+}
+
+object_t *
+builtin_quotient (object_t *args, object_t *env)
+{
+  if (!args)
+    return object_new_integer (0, current_heap);
+
+  promotion_t promotion = assess_promotion (args, "Quotient");
+  if (promotion != PROMOTED_TO_NONE)
+    raise_runtime_error ("Quotient only accepts integral values");
+
+  intmax_t result = args->v_integer;
+  for (object_t *a = args->next; a; a = a->next)
+    {
+      if (a->v_integer == 0)
+        raise_runtime_error ("Division by zero");
+      result /= a->v_integer;
     }
 
-  return object_new_complex (result, current_heap);
+  return object_new_integer (result, current_heap);
 }
 
 object_t *
-builtin_mod (object_t *args, object_t *env)
+builtin_modulo (object_t *args, object_t *env)
 {
-  if (args->next == NULL)
-    raise_runtime_error ("Modulo needs a denumerator");
+  if (!args)
+    return object_new_integer (0, current_heap);
 
-  object_t *num = args;
-  object_t *denum = args->next;
+  promotion_t promotion = assess_promotion (args, "Modulo");
+  if (promotion != PROMOTED_TO_NONE)
+    raise_runtime_error ("Modulo only accepts integral values");
 
-  if (!(num->type == OBJ_Integer && denum->type == OBJ_Integer))
-    raise_runtime_error ("Modulo takes two integers");
+  intmax_t dividend = imaxabs (args->v_integer);
+  intmax_t divisor = imaxabs (args->next->v_integer);
 
-  intmax_t inum = abs (num->v_integer);
-  intmax_t idenum = abs (denum->v_integer);
-
-  if (idenum == 0)
+  if (divisor == 0)
     raise_runtime_error ("Division by zero");
 
-  return object_new_integer (inum % idenum, current_heap);
+  intmax_t result = dividend % divisor;
+
+  return object_new_integer (result, current_heap);
 }
 
 object_t *
-builtin_rem (object_t *args, object_t *env)
+builtin_remainder (object_t *args, object_t *env)
 {
-  if (args->next == NULL)
-    raise_runtime_error ("Remainder needs a denumerator");
+  if (!args)
+    return object_new_integer (0, current_heap);
 
-  object_t *num = args;
-  object_t *denum = args->next;
+  promotion_t promotion = assess_promotion (args, "Remainder");
+  if (promotion != PROMOTED_TO_NONE)
+    raise_runtime_error ("Remainder only accepts integral values");
 
-  if (!(num->type == OBJ_Integer && denum->type == OBJ_Integer))
-    raise_runtime_error ("Remainder takes two integers");
+  intmax_t dividend = args->v_integer;
+  intmax_t divisor = args->next->v_integer;
 
-  intmax_t inum = abs (num->v_integer);
-  intmax_t idenum = abs (denum->v_integer);
-
-  if (idenum == 0)
+  if (divisor == 0)
     raise_runtime_error ("Division by zero");
 
-  int sign = denum->v_integer / denum->v_integer;
+  int sign = dividend / dividend;
 
-  return object_new_integer ((inum % idenum) * sign, current_heap);
-}
+  intmax_t result = (imaxabs (dividend) % imaxabs (divisor)) * sign;
 
-object_t*
-builtin_set (object_t *args, object_t *env)
-{
-    if (args->next == NULL)
-	    raise_runtime_error ("Set needs two arguments");
-
-    object_t *name = args;
-    object_t *value = args->next;
-
-    if (name->type != OBJ_Symbol)
-	    raise_runtime_error ("First argument to set! must be a symbol or identifier");
-
-    environ_install (env->v_environ, name, value);
-    return NULL;
+  return object_new_integer (result, current_heap);
 }
