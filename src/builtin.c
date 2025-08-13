@@ -525,7 +525,7 @@ builtin_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("equal? takes two arguments");
 
-  if (!(args->type == OBJ_Vector || args->type != OBJ_Bytevector
+  if (!(args->type != OBJ_Vector || args->type != OBJ_Bytevector
         || obj->type != OBJ_Pair))
     return builtin_eqv (args, env);
 
@@ -545,11 +545,86 @@ builtin_strings_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("str=? takes two arguments");
 
-  if (!(arg->type == OBJ_String || args->next->type != OBJ_String))
+  if (!(args->type == OBJ_String || args->next->type == OBJ_String))
     raise_runtime_error ("str=? takes two string arguments");
 
-  const uint8_t *str1 = args->v_buffz;
-  const uint8_t *str2 = args->next->v_buffz;
+  return object_new_bools (object_equals (args, args->next), current_heap);
+}
 
-  return object_new_bool (strcmp (str1, str2) == 0, current_heap);
+object_t *
+builtin_synobjs_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("syntax=? takes two arguments");
+
+  if (!(args->type == OBJ_Synobj || args->next->type == OBJ_Synobj))
+    raise_runtime_error ("syntax=? takes two syntax arguments");
+
+  for (object_t *d1 = args->v_synobj->datum; d1; d1 = d1->next)
+    {
+      for (object_t *d2 = args->next->v_synobj->datum; d2; d2 = d2->next)
+        {
+          bool result = object_equals (d1, d2);
+          if (!result)
+            return object_new_bool (false, current_heap);
+        }
+    }
+  return object_new_bool (true, current_heap);
+}
+
+object_t *
+builtin_characters_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("char=? takes two arguments");
+
+  if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
+    raise_runtime_error ("char=? takes two character arguments");
+
+  return object_new_bool (args->v_character == args->next->v_character,
+                          current_heap);
+}
+
+object_t *
+builtin_vectors_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("vector=? takes two arguments");
+
+  if (!(args->type == OBJ_Vector || args->next->type == OBJ_Vector))
+    raise_runtime_error ("vector=? takes two vector arguments");
+
+  for (size_t i = 0; i < args->v_vector->size; i++)
+    {
+      for (size_t j = 0; j < args->next->v_vector->size; j++)
+        {
+          bool result = object_equals (args->v_vector->vals[i],
+                                       args->next->v_vector->vals[i]);
+          if (!result)
+            return object_new_bool (result, current_heap);
+        }
+    }
+  return object_new_bool (true, current_heap);
+}
+
+object_t *
+builtin_bytevectors_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("bytevector=? takes two arguments");
+
+  if (!(args->type == OBJ_Bytevector || args->next->type == OBJ_Bytevector))
+    raise_runtime_error ("bytevector=? takes two bytevector arguments");
+
+  for (size_t i = 0; i < args->v_bytevector->size; i++)
+    {
+      for (size_t j = 0; j < args->next->v_bytevector->size; j++)
+        {
+          bool result = args->v_bytevector->vals[i]
+                        == args->next->v_bytevector->vals[j];
+          if (!result)
+            return object_new_bool (result, current_heap);
+        }
+    }
+  return object_new_bool (true, current_heap);
 }
