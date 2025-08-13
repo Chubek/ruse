@@ -298,6 +298,8 @@ builtin_nums_equal (object_t *args, object_t *env)
   if (!args || !args->next || !args->next->next)
     raise_runtime_error ("= takes at least two arguments");
 
+  promotion_t _ = assess_promotion (args, "=");
+
   bool result = false;
   for (object_t *a = args; a; a = a->next)
     {
@@ -318,7 +320,7 @@ builtin_nums_equal (object_t *args, object_t *env)
               continue;
             case OBJ_Complex:
               result = a->v_complex == b->v_complex;
-              continue;
+          i    continue;
             }
         }
     }
@@ -332,6 +334,8 @@ builtin_nums_greater (object_t *args, object_t *env)
 {
   if (!args || !args->next || !args->next->next)
     raise_runtime_error ("> takes at least two arguments");
+
+  promotion_t _ = assess_promotion (args, ">");
 
   bool result = false;
   for (object_t *a = args; a; a = a->next)
@@ -368,6 +372,8 @@ builtin_nums_greater_equal (object_t *args, object_t *env)
   if (!args || !args->next || !args->next->next)
     raise_runtime_error (">= takes at least two arguments");
 
+  promotion_t _ = assess_promotion (args, ">=");
+
   bool result = false;
   for (object_t *a = args; a; a = a->next)
     {
@@ -403,6 +409,8 @@ builtin_nums_lesser (object_t *args, object_t *env)
   if (!args || !args->next || !args->next->next)
     raise_runtime_error ("< takes at least two arguments");
 
+  promotion_t _ = assess_promotion (args, "<");
+
   bool result = false;
   for (object_t *a = args; a; a = a->next)
     {
@@ -437,6 +445,8 @@ builtin_nums_lesser_equal (object_t *args, object_t *env)
 {
   if (!args || !args->next || !args->next->next)
     raise_runtime_error ("<= takes at least two arguments");
+
+  promotion_t _ = assess_promotion (args, "<=");
 
   bool result = false;
   for (object_t *a = args; a; a = a->next)
