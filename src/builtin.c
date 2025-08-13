@@ -306,10 +306,7 @@ builtin_nums_equal (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            {
-              result = false;
-              goto RET;
-            }
+            return object_new_bool (false, );
           switch (a->type)
             {
             case OBJ_Integer:
@@ -325,7 +322,39 @@ builtin_nums_equal (object_t *args, object_t *env)
         }
     }
 
-RET:
+  return object_new_bool (result, current_heap);
+}
+
+object_t *
+builtin_nums_not_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("=/= takes at least two arguments");
+
+  promotion_t _ = assess_promotion (args, "=");
+
+  bool result = false;
+  for (object_t *a = args; a; a = a->next)
+    {
+      for (object_t *b = args->next; b; b = b->next)
+        {
+          if (a->type != b->type)
+            return object_new_bool (true, );
+          switch (a->type)
+            {
+            case OBJ_Integer:
+              result = a->v_integer != b->v_integer;
+              continue;
+            case OBJ_Real:
+              result = a->v_real != b->v_real;
+              continue;
+            case OBJ_Complex:
+              result = a->v_complex != b->v_complex;
+              i continue;
+            }
+        }
+    }
+
   return object_new_bool (result, current_heap);
 }
 
@@ -343,10 +372,7 @@ builtin_nums_greater (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            {
-              result = false;
-              goto RET;
-            }
+            return object_new_bool (false, current_heap);
           switch (a->type)
             {
             case OBJ_Integer:
@@ -362,7 +388,6 @@ builtin_nums_greater (object_t *args, object_t *env)
         }
     }
 
-RET:
   return object_new_bool (result, current_heap);
 }
 
@@ -380,10 +405,7 @@ builtin_nums_greater_equal (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            {
-              result = false;
-              goto RET;
-            }
+            return object_new_bool (false, current_heap);
           switch (a->type)
             {
             case OBJ_Integer:
@@ -399,7 +421,6 @@ builtin_nums_greater_equal (object_t *args, object_t *env)
         }
     }
 
-RET:
   return object_new_bool (result, current_heap);
 }
 
@@ -417,10 +438,7 @@ builtin_nums_lesser (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            {
-              result = false;
-              goto RET;
-            }
+            return object_new_bool (false, current_heap);
           switch (a->type)
             {
             case OBJ_Integer:
@@ -436,7 +454,6 @@ builtin_nums_lesser (object_t *args, object_t *env)
         }
     }
 
-RET:
   return object_new_bool (result, current_heap);
 }
 
@@ -454,10 +471,7 @@ builtin_nums_lesser_equal (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            {
-              result = false;
-              goto RET;
-            }
+            return object_new_bool (false, current_heap);
           switch (a->type)
             {
             case OBJ_Integer:
@@ -473,7 +487,6 @@ builtin_nums_lesser_equal (object_t *args, object_t *env)
         }
     }
 
-RET:
   return object_new_bool (result, current_heap);
 }
 
@@ -510,7 +523,7 @@ object_t *
 builtin_equal (object_t *args, object_t *env)
 {
   if (!args || !args->next)
-    raise_runtime_error ("equal? takes two argument");
+    raise_runtime_error ("equal? takes two arguments");
 
   if (!(args->type == OBJ_Vector || args->type != OBJ_Bytevector
         || obj->type != OBJ_Pair))
@@ -524,4 +537,19 @@ builtin_equal (object_t *args, object_t *env)
     return builtin_pairs_equal (args, env);
 
   return NULL;
+}
+
+object_t *
+builtin_strings_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("str=? takes two arguments");
+
+  if (!(arg->type == OBJ_String || args->next->type != OBJ_String))
+    raise_runtime_error ("str=? takes two string arguments");
+
+  const uint8_t *str1 = args->v_buffz;
+  const uint8_t *str2 = args->next->v_buffz;
+
+  return object_new_bool (strcmp (str1, str2) == 0, current_heap);
 }
