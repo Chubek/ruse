@@ -12,6 +12,9 @@
 typedef int promotion_t;
 
 extern heap_t *current_heap;
+extern object_t *object_nil;
+extern object_t *object_true;
+extern object_t *object_false;
 
 static inline object_t *
 deref_symbols (object_t *args, object_t *env)
@@ -61,7 +64,7 @@ object_t *
 builtin_add (object_t *args, object_t *env)
 {
   if (!args)
-    return object_new_integer (0, current_heap);
+    return object_new_integer (0,
 
   deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Addition");
@@ -72,31 +75,31 @@ builtin_add (object_t *args, object_t *env)
       intmax_t result = 0;
       for (object_t *a = args; a; a = a->next)
         result += a->v_integer;
-      return object_new_integer (result, current_heap);
+      return object_new_integer (result,
     case PROMOTED_TO_REAL:
       double result = 0.0;
       for (object_t *a = args; a; a = a->next)
         {
-          if (a->type == OBJ_Integer)
-            result += a->v_integer;
-          else
-            result += a->v_real;
+        if (a->type == OBJ_Integer)
+          result += a->v_integer;
+        else
+          result += a->v_real;
         }
-      return object_new_real (result, current_heap);
+      return object_new_real (result,
     case PROMOTED_TO_COMPLEX:
       double complex result = 0.0 * I;
       for (object_t *a = args; a; a = a->next)
         {
-          if (a->type == OBJ_Integer)
-            result += a->v_integer;
-          else if (a->type == OBJ_Real)
-            result += a->v_real;
-          else if (a->type == OBJ_Complex)
-            result += a->v_complex;
+        if (a->type == OBJ_Integer)
+          result += a->v_integer;
+        else if (a->type == OBJ_Real)
+          result += a->v_real;
+        else if (a->type == OBJ_Complex)
+          result += a->v_complex;
         }
-      return object_new_complex (result, current_heap);
+      return object_new_complex (result,
     default:
-      return NULL;
+      return object_nil;
     }
 }
 
@@ -104,7 +107,7 @@ object_t *
 builtin_subtract (object_t *args, object_t *env)
 {
   if (!args)
-    return object_new_integer (0, current_heap);
+    return object_new_integer (0,
 
   deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Subtraction");
@@ -114,31 +117,31 @@ builtin_subtract (object_t *args, object_t *env)
       intmax_t result = args->v_integer;
       for (object_t *a = args->next; a; a = a->next)
         result -= a->v_integer;
-      return object_new_integer (result, current_heap);
+      return object_new_integer (result,
     case PROMOTED_TO_REAL:
       double result = args->v_real;
       for (object_t *a = args->next; a; a = a->next)
         {
-          if (a->type == OBJ_Integer)
-            result -= a->v_integer;
-          else
-            result -= a->v_real;
+        if (a->type == OBJ_Integer)
+          result -= a->v_integer;
+        else
+          result -= a->v_real;
         }
-      return object_new_real (result, current_heap);
+      return object_new_real (result,
     case PROMOTED_TO_COMPLEX:
       double complex result = args->v_complex;
       for (object_t *a = args->next; a; a = a->next)
         {
-          if (a->type == OBJ_Integer)
-            result -= a->v_integer;
-          else if (a->type == OBJ_Real)
-            result -= a->v_real;
-          else
-            result -= a->v_complex;
+        if (a->type == OBJ_Integer)
+          result -= a->v_integer;
+        else if (a->type == OBJ_Real)
+          result -= a->v_real;
+        else
+          result -= a->v_complex;
         }
-      return object_new_complex (result, current_heap);
+      return object_new_complex (result,
     default:
-      return NULL;
+      return object_nil;
     }
 }
 
@@ -153,31 +156,31 @@ builtin_multiply (object_t *args, object_t *env)
       intmax_t result = 1;
       for (object_t *a = args; a; a = a->next)
         result *= a->v_integer;
-      return object_new_integer (result, current_heap);
+      return object_new_integer (result,
     case ROMOTED_TO_REAL:
       double result = 1.0;
       for (object_t *a = args; a; a = a->next)
         {
-          if (a->type == OBJ_Integer)
-            result *= a->v_integer;
-          else
-            result *= a->v_real;
+        if (a->type == OBJ_Integer)
+          result *= a->v_integer;
+        else
+          result *= a->v_real;
         }
-      return object_new_real (result, current_heap);
+      return object_new_real (result,
     case PROMOTED_TO_COMPLEX:
       double complex result = 1.0 * I;
       for (object_t *a = args; a; a = a->next)
         {
-          if (a->type == OBJ_Integer)
-            result *= a->v_integer;
-          else if (a->type == OBJ_Real)
-            result *= a->v_real;
-          else
-            result *= a->v_complex;
+        if (a->type == OBJ_Integer)
+          result *= a->v_integer;
+        else if (a->type == OBJ_Real)
+          result *= a->v_real;
+        else
+          result *= a->v_complex;
         }
-      return object_new_complex (result, current_heap);
+      return object_new_complex (result,
     default:
-      return NULL;
+      return object_nil;
     }
 }
 
@@ -185,7 +188,7 @@ object_t *
 builtin_divide (object_t *args, object_t *env)
 {
   if (!args)
-    return object_new_integer (0, current_heap);
+    return object_new_integer (0,
 
   deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Division");
@@ -199,51 +202,51 @@ builtin_divide (object_t *args, object_t *env)
             raise_runtime_error ("Division by zero");
           result /= a->v_integer;
         }
-      return object_new_integer (result, current_heap);
+      return object_new_integer (result,
     case PROMOTED_TO_REAL:
       double result = args->v_real;
       for (object_t *a = args->next; a; a = a->next)
         {
-          if (a->type == OBJ_Integer)
-            {
-              if (a->v_integer == 0)
-                raise_runtime_error ("Division by zero");
-              result -= a->v_integer;
-            }
-          else
-            {
-              if (a->v_real == 0.0)
-                raise_runtime_error ("Division by zero");
-              result -= a->v_real;
-            }
+        if (a->type == OBJ_Integer)
+          {
+            if (a->v_integer == 0)
+              raise_runtime_error ("Division by zero");
+            result -= a->v_integer;
+          }
+        else
+          {
+            if (a->v_real == 0.0)
+              raise_runtime_error ("Division by zero");
+            result -= a->v_real;
+          }
         }
-      return object_new_real (result, current_heap);
+      return object_new_real (result,
     case PROMOTED_TO_COMPLEX:
       double complex result = args->v_complex;
       for (object_t *a = args->next; a; a = a->next)
         {
-          if (a->type == OBJ_Integer)
-            {
-              if (a->v_integer == 0)
-                raise_runtime_error ("Division by zero");
-              result -= a->v_integer;
-            }
-          else if (a->type == OBJ_Real)
-            {
-              if (a->v_real == 0.0)
-                raise_runtime_error ("Division by zero");
-              result -= a->v_real;
-            }
-          else
-            {
-              if (a->v_complex == 0.0 * I)
-                raise_runtime_error ("Division by zero");
-              result -= a->v_complex;
-            }
+        if (a->type == OBJ_Integer)
+          {
+            if (a->v_integer == 0)
+              raise_runtime_error ("Division by zero");
+            result -= a->v_integer;
+          }
+        else if (a->type == OBJ_Real)
+          {
+            if (a->v_real == 0.0)
+              raise_runtime_error ("Division by zero");
+            result -= a->v_real;
+          }
+        else
+          {
+            if (a->v_complex == 0.0 * I)
+              raise_runtime_error ("Division by zero");
+            result -= a->v_complex;
+          }
         }
-      return object_new_complex (result, current_heap);
+      return object_new_complex (result,
     default:
-      return NULL;
+      return object_nil;
     }
 }
 
@@ -251,7 +254,7 @@ object_t *
 builtin_quotient (object_t *args, object_t *env)
 {
   if (!args)
-    return object_new_integer (0, current_heap);
+    return object_new_integer (0,
 
   deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Quotient");
@@ -266,7 +269,7 @@ builtin_quotient (object_t *args, object_t *env)
       result /= a->v_integer;
     }
 
-  return object_new_integer (result, current_heap);
+  return object_new_integer (result,
 }
 
 object_t *
@@ -288,7 +291,7 @@ builtin_modulo (object_t *args, object_t *env)
 
   intmax_t result = dividend % divisor;
 
-  return object_new_integer (result, current_heap);
+  return object_new_integer (result,
 }
 
 object_t *
@@ -312,7 +315,7 @@ builtin_remainder (object_t *args, object_t *env)
 
   intmax_t result = (imaxabs (dividend) % imaxabs (divisor)) * sign;
 
-  return object_new_integer (result, current_heap);
+  return object_new_integer (result,
 }
 
 object_t *
@@ -330,7 +333,7 @@ builtin_nums_equal (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            return object_new_bool (false, );
+            return object_false;
           switch (a->type)
             {
             case OBJ_Integer:
@@ -346,7 +349,7 @@ builtin_nums_equal (object_t *args, object_t *env)
         }
     }
 
-  return object_new_bool (result, current_heap);
+  return result ? object_true : object_false;
 }
 
 object_t *
@@ -380,7 +383,7 @@ builtin_nums_not_equal (object_t *args, object_t *env)
         }
     }
 
-  return object_new_bool (result, current_heap);
+  return result ? object_true : object_false;
 }
 
 object_t *
@@ -398,7 +401,7 @@ builtin_nums_greater (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            return object_new_bool (false, current_heap);
+            return object_false;
           switch (a->type)
             {
             case OBJ_Integer:
@@ -414,7 +417,7 @@ builtin_nums_greater (object_t *args, object_t *env)
         }
     }
 
-  return object_new_bool (result, current_heap);
+  return result ? object_true : object_false;
 }
 
 object_t *
@@ -432,7 +435,7 @@ builtin_nums_greater_equal (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            return object_new_bool (false, current_heap);
+            return object_false;
           switch (a->type)
             {
             case OBJ_Integer:
@@ -448,7 +451,7 @@ builtin_nums_greater_equal (object_t *args, object_t *env)
         }
     }
 
-  return object_new_bool (result, current_heap);
+  return result ? object_true : object_false;
 }
 
 object_t *
@@ -466,7 +469,7 @@ builtin_nums_lesser (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            return object_new_bool (false, current_heap);
+            return object_false;
           switch (a->type)
             {
             case OBJ_Integer:
@@ -482,7 +485,7 @@ builtin_nums_lesser (object_t *args, object_t *env)
         }
     }
 
-  return object_new_bool (result, current_heap);
+  return result ? object_true : object_false;
 }
 
 object_t *
@@ -500,7 +503,7 @@ builtin_nums_lesser_equal (object_t *args, object_t *env)
       for (object_t *b = args->next; b; b = b->next)
         {
           if (a->type != b->type)
-            return object_new_bool (false, current_heap);
+            return object_false;
           switch (a->type)
             {
             case OBJ_Integer:
@@ -516,7 +519,7 @@ builtin_nums_lesser_equal (object_t *args, object_t *env)
         }
     }
 
-  return object_new_bool (result, current_heap);
+  return result ? object_true : object_false;
 }
 
 object_t *
@@ -527,7 +530,7 @@ builtin_eq (object_t *args, object_t *env)
 
   deref_symbols (args, env);
   bool result = (args == args->next);
-  return object_new_bool (result, current_heap);
+  return result ? object_true : object_false;
 }
 
 object_t *
@@ -568,7 +571,7 @@ builtin_equal (object_t *args, object_t *env)
   else if (args->type == OBJ_Pair)
     return builtin_pairs_equal (args, env);
 
-  return NULL;
+  return object_nil;
 }
 
 object_t *
@@ -581,7 +584,7 @@ builtin_strings_equal (object_t *args, object_t *env)
   if (!(args->type == OBJ_String || args->next->type == OBJ_String))
     raise_runtime_error ("str=? takes two string arguments");
 
-  return object_new_bools (object_equals (args, args->next), current_heap);
+  return object_new_bools (object_equals (args, args->next),
 }
 
 object_t *
@@ -600,10 +603,10 @@ builtin_synobjs_equal (object_t *args, object_t *env)
         {
           bool result = object_equals (d1, d2);
           if (!result)
-            return object_new_bool (false, current_heap);
+            return object_false;
         }
     }
-  return object_new_bool (true, current_heap);
+  return object_true;
 }
 
 object_t *
@@ -616,8 +619,8 @@ builtin_characters_equal (object_t *args, object_t *env)
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char=? takes two character arguments");
 
-  return object_new_bool (args->v_character == args->next->v_character,
-                          current_heap);
+  return args->v_character == args->next->v_character ? object_true
+                                                      : object_false;
 }
 
 object_t *
@@ -630,8 +633,8 @@ builtin_characters_greater (object_t *args, object_t *env)
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char>? takes two character arguments");
 
-  return object_new_bool (args->v_character > args->next->v_character,
-                          current_heap);
+  return args->v_character > args->next->v_character ? object_true
+                                                     : object_false;
 }
 
 object_t *
@@ -644,8 +647,8 @@ builtin_characters_greater_equal (object_t *args, object_t *env)
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char>=? takes two character arguments");
 
-  return object_new_bool (args->v_character >= args->next->v_character,
-                          current_heap);
+  return args->v_character >= args->next->v_character ? object_true
+                                                      : object_false;
 }
 
 object_t *
@@ -658,8 +661,8 @@ builtin_characters_lesser (object_t *args, object_t *env)
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char<? takes two character arguments");
 
-  return object_new_bool (args->v_character < args->next->v_character,
-                          current_heap);
+  return args->v_character < args->next->v_character ? object_true
+                                                     : object_false;
 }
 
 object_t *
@@ -672,8 +675,8 @@ builtin_characters_lesser_equal (object_t *args, object_t *env)
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char<=? takes two character arguments");
 
-  return object_new_bool (args->v_character <= args->next->v_character,
-                          current_heap);
+  return args->v_character <= args->next->v_character ? object_true
+                                                      : object_false;
 }
 
 object_t *
@@ -693,10 +696,10 @@ builtin_vectors_equal (object_t *args, object_t *env)
           bool result = object_equals (args->v_vector->vals[i],
                                        args->next->v_vector->vals[i]);
           if (!result)
-            return object_new_bool (result, current_heap);
+            return object_false;
         }
     }
-  return object_new_bool (true, current_heap);
+  return object_true;
 }
 
 object_t *
@@ -716,10 +719,10 @@ builtin_bytevectors_equal (object_t *args, object_t *env)
           bool result = args->v_bytevector->vals[i]
                         == args->next->v_bytevector->vals[j];
           if (!result)
-            return object_new_bool (result, current_heap);
+            return object_false;
         }
     }
-  return object_new_bool (true, current_heap);
+  return object_true;
 }
 
 object_t *
@@ -735,7 +738,7 @@ builtin_string_ref (object_t *args, object_t *env)
   const char32_t *buffz = args->v_buffz;
   intmax_t idx = args->next->v_integer;
 
-  return object_new_character (buffz[idx], current_heap);
+  return object_new_character (buffz[idx],
 }
 
 object_t *
@@ -749,16 +752,21 @@ builtin_list_ref (object_t *args, object_t *env)
     raise_runtime_error ("list-ref takes two arguments");
 
   pair_t *lst = args->v_pair;
+  object_t *cursor = lst->rest;
   intmax_t idx = args->next->v_integer;
-  size_t cursor = 0;
 
-  while (cursor <= idx && lst)
+  while (idx && cursor && cursor->first->type != OBJ_Nil)
     {
-      lst = lst->rest;
-      cursor++;
+      idx--;
+      cursor = cursor->rest;
     }
 
-  return lst->first;
+  if (cursor && cursor->type == OBJ_Pair)
+    return cursor->first;
+  else
+    raise_runtime_error ("Not a proper list");
+
+  return object_nil;
 }
 
 object_t *
@@ -791,5 +799,5 @@ builtin_bytevector_ref (object_t *args, object_t *env)
   bytevector_t *bvec = args->v_bytevector;
   intmax_t idx = args->next->v_integer;
 
-  return object_new_byte (bvec->vals[idx], current_heap);
+  return object_new_byte (bvec->vals[idx],
 }
