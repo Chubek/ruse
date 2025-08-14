@@ -755,6 +755,9 @@ builtin_list_ref (object_t *args, object_t *env)
   object_t *cursor = lst->rest;
   intmax_t idx = args->next->v_integer;
 
+  if (idx == 0)
+    return lst->first;
+
   while (idx && cursor && cursor->rest->type != OBJ_Nil)
     {
       idx--;
