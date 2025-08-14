@@ -13,6 +13,22 @@ typedef int promotion_t;
 
 extern heap_t *current_heap;
 
+static inline object_t *
+deref_symbols (object_t *args, object_t *env)
+{
+  for (object_t *a = args; a; a = a->next)
+    {
+      if (a->type == OBJ_Symbol)
+        {
+          object_t **ap = &a;
+          object_t *ref = environ_retrieve (env->v_environ, a);
+          if (ref == NULL)
+            raise_runtime_error ("Symbol does not exist");
+          *ap = ref;
+        }
+    }
+}
+
 static inline promotion_t
 assess_promotion (object_t *args, const char *fnname)
 {
@@ -47,6 +63,7 @@ builtin_add (object_t *args, object_t *env)
   if (!args)
     return object_new_integer (0, current_heap);
 
+  deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Addition");
 
   switch (promotion)
@@ -89,6 +106,7 @@ builtin_subtract (object_t *args, object_t *env)
   if (!args)
     return object_new_integer (0, current_heap);
 
+  deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Subtraction");
   switch (promotion)
     {
@@ -127,6 +145,7 @@ builtin_subtract (object_t *args, object_t *env)
 object_t *
 builtin_multiply (object_t *args, object_t *env)
 {
+  deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Multiplication");
   switch (promotion)
     {
@@ -168,6 +187,7 @@ builtin_divide (object_t *args, object_t *env)
   if (!args)
     return object_new_integer (0, current_heap);
 
+  deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Division");
   switch (promotion)
     {
@@ -233,6 +253,7 @@ builtin_quotient (object_t *args, object_t *env)
   if (!args)
     return object_new_integer (0, current_heap);
 
+  deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Quotient");
   if (promotion != PROMOTED_TO_NONE)
     raise_runtime_error ("Quotient only accepts integral values");
@@ -254,6 +275,7 @@ builtin_modulo (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("Modulo takes 2 arguments");
 
+  deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Modulo");
   if (promotion != PROMOTED_TO_NONE)
     raise_runtime_error ("Modulo only accepts integral values");
@@ -275,6 +297,7 @@ builtin_remainder (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("Remainder takes two arguments");
 
+  deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Remainder");
   if (promotion != PROMOTED_TO_NONE)
     raise_runtime_error ("Remainder only accepts integral values");
@@ -298,6 +321,7 @@ builtin_nums_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("= takes at least two arguments");
 
+  deref_symbols (args, env);
   promotion_t _ = assess_promotion (args, "=");
 
   bool result = false;
@@ -331,6 +355,7 @@ builtin_nums_not_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("=/= takes at least two arguments");
 
+  deref_symbols (args, env);
   promotion_t _ = assess_promotion (args, "=");
 
   bool result = false;
@@ -364,6 +389,7 @@ builtin_nums_greater (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("> takes at least two arguments");
 
+  deref_symbols (args, env);
   promotion_t _ = assess_promotion (args, ">");
 
   bool result = false;
@@ -397,6 +423,7 @@ builtin_nums_greater_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error (">= takes at least two arguments");
 
+  deref_symbols (args, env);
   promotion_t _ = assess_promotion (args, ">=");
 
   bool result = false;
@@ -430,6 +457,7 @@ builtin_nums_lesser (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("< takes at least two arguments");
 
+  deref_symbols (args, env);
   promotion_t _ = assess_promotion (args, "<");
 
   bool result = false;
@@ -463,6 +491,7 @@ builtin_nums_lesser_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("<= takes at least two arguments");
 
+  deref_symbols (args, env);
   promotion_t _ = assess_promotion (args, "<=");
 
   bool result = false;
@@ -496,6 +525,7 @@ builtin_eq (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("eq? requires two arguments");
 
+  deref_symbols (args, env);
   bool result = (args == args->next);
   return object_new_bool (result, current_heap);
 }
@@ -506,6 +536,7 @@ builtin_eqv (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtim_error ("eqv? takes two arguments");
 
+  deref_symbols (args, env);
   if (args->type == OBJ_Integer || args->type == OBJ_Real
       || args->type == OBJ_Complex)
     return builtin_nums_equal (args, env);
@@ -525,6 +556,7 @@ builtin_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("equal? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type != OBJ_Vector || args->type != OBJ_Bytevector
         || obj->type != OBJ_Pair))
     return builtin_eqv (args, env);
@@ -545,6 +577,7 @@ builtin_strings_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("str=? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_String || args->next->type == OBJ_String))
     raise_runtime_error ("str=? takes two string arguments");
 
@@ -557,6 +590,7 @@ builtin_synobjs_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("syntax=? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_Synobj || args->next->type == OBJ_Synobj))
     raise_runtime_error ("syntax=? takes two syntax arguments");
 
@@ -578,6 +612,7 @@ builtin_characters_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("char=? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char=? takes two character arguments");
 
@@ -591,6 +626,7 @@ builtin_characters_greater (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("char>? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char>? takes two character arguments");
 
@@ -604,6 +640,7 @@ builtin_characters_greater_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("char>=? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char>=? takes two character arguments");
 
@@ -617,6 +654,7 @@ builtin_characters_lesser (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("char<? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char<? takes two character arguments");
 
@@ -630,6 +668,7 @@ builtin_characters_lesser_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("char<=? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
     raise_runtime_error ("char<=? takes two character arguments");
 
@@ -643,6 +682,7 @@ builtin_vectors_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("vector=? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_Vector || args->next->type == OBJ_Vector))
     raise_runtime_error ("vector=? takes two vector arguments");
 
@@ -665,6 +705,7 @@ builtin_bytevectors_equal (object_t *args, object_t *env)
   if (!args || !args->next)
     raise_runtime_error ("bytevector=? takes two arguments");
 
+  deref_symbols (args, env);
   if (!(args->type == OBJ_Bytevector || args->next->type == OBJ_Bytevector))
     raise_runtime_error ("bytevector=? takes two bytevector arguments");
 
@@ -679,4 +720,10 @@ builtin_bytevectors_equal (object_t *args, object_t *env)
         }
     }
   return object_new_bool (true, current_heap);
+}
+
+object_t *
+builtin_vector_ref (object_t *args, object_t *env)
+{
+  if (!arg)
 }
