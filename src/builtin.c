@@ -64,7 +64,7 @@ object_t *
 builtin_add (object_t *args, object_t *env)
 {
   if (!args)
-    return object_new_integer (0,
+    return object_new_integer (0, current_heap);
 
   deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Addition");
@@ -75,29 +75,29 @@ builtin_add (object_t *args, object_t *env)
       intmax_t result = 0;
       for (object_t *a = args; a; a = a->next)
         result += a->v_integer;
-      return object_new_integer (result,
+      return object_new_integer (result, current_heap);
     case PROMOTED_TO_REAL:
       double result = 0.0;
       for (object_t *a = args; a; a = a->next)
         {
-        if (a->type == OBJ_Integer)
-          result += a->v_integer;
-        else
-          result += a->v_real;
+          if (a->type == OBJ_Integer)
+            result += a->v_integer;
+          else
+            result += a->v_real;
         }
-      return object_new_real (result,
+      return object_new_real (result, current_heap);
     case PROMOTED_TO_COMPLEX:
       double complex result = 0.0 * I;
       for (object_t *a = args; a; a = a->next)
         {
-        if (a->type == OBJ_Integer)
-          result += a->v_integer;
-        else if (a->type == OBJ_Real)
-          result += a->v_real;
-        else if (a->type == OBJ_Complex)
-          result += a->v_complex;
+          if (a->type == OBJ_Integer)
+            result += a->v_integer;
+          else if (a->type == OBJ_Real)
+            result += a->v_real;
+          else if (a->type == OBJ_Complex)
+            result += a->v_complex;
         }
-      return object_new_complex (result,
+      return object_new_complex (result, current_heap);
     default:
       return object_nil;
     }
@@ -107,7 +107,7 @@ object_t *
 builtin_subtract (object_t *args, object_t *env)
 {
   if (!args)
-    return object_new_integer (0,
+    return object_new_integer (0, current_heap);
 
   deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Subtraction");
@@ -117,29 +117,29 @@ builtin_subtract (object_t *args, object_t *env)
       intmax_t result = args->v_integer;
       for (object_t *a = args->next; a; a = a->next)
         result -= a->v_integer;
-      return object_new_integer (result,
+      return object_new_integer (result, current_heap);
     case PROMOTED_TO_REAL:
       double result = args->v_real;
       for (object_t *a = args->next; a; a = a->next)
         {
-        if (a->type == OBJ_Integer)
-          result -= a->v_integer;
-        else
-          result -= a->v_real;
+          if (a->type == OBJ_Integer)
+            result -= a->v_integer;
+          else
+            result -= a->v_real;
         }
-      return object_new_real (result,
+      return object_new_real (result, current_heap);
     case PROMOTED_TO_COMPLEX:
       double complex result = args->v_complex;
       for (object_t *a = args->next; a; a = a->next)
         {
-        if (a->type == OBJ_Integer)
-          result -= a->v_integer;
-        else if (a->type == OBJ_Real)
-          result -= a->v_real;
-        else
-          result -= a->v_complex;
+          if (a->type == OBJ_Integer)
+            result -= a->v_integer;
+          else if (a->type == OBJ_Real)
+            result -= a->v_real;
+          else
+            result -= a->v_complex;
         }
-      return object_new_complex (result,
+      return object_new_complex (result, current_heap);
     default:
       return object_nil;
     }
@@ -156,29 +156,29 @@ builtin_multiply (object_t *args, object_t *env)
       intmax_t result = 1;
       for (object_t *a = args; a; a = a->next)
         result *= a->v_integer;
-      return object_new_integer (result,
+      return object_new_integer (result, current_heap);
     case ROMOTED_TO_REAL:
       double result = 1.0;
       for (object_t *a = args; a; a = a->next)
         {
-        if (a->type == OBJ_Integer)
-          result *= a->v_integer;
-        else
-          result *= a->v_real;
+          if (a->type == OBJ_Integer)
+            result *= a->v_integer;
+          else
+            result *= a->v_real;
         }
-      return object_new_real (result,
+      return object_new_real (result, current_heap);
     case PROMOTED_TO_COMPLEX:
       double complex result = 1.0 * I;
       for (object_t *a = args; a; a = a->next)
         {
-        if (a->type == OBJ_Integer)
-          result *= a->v_integer;
-        else if (a->type == OBJ_Real)
-          result *= a->v_real;
-        else
-          result *= a->v_complex;
+          if (a->type == OBJ_Integer)
+            result *= a->v_integer;
+          else if (a->type == OBJ_Real)
+            result *= a->v_real;
+          else
+            result *= a->v_complex;
         }
-      return object_new_complex (result,
+      return object_new_complex (result, current_heap);
     default:
       return object_nil;
     }
@@ -188,7 +188,7 @@ object_t *
 builtin_divide (object_t *args, object_t *env)
 {
   if (!args)
-    return object_new_integer (0,
+    return object_new_integer (0, current_heap);
 
   deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Division");
@@ -202,49 +202,49 @@ builtin_divide (object_t *args, object_t *env)
             raise_runtime_error ("Division by zero");
           result /= a->v_integer;
         }
-      return object_new_integer (result,
+      return object_new_integer (result, current_heap);
     case PROMOTED_TO_REAL:
       double result = args->v_real;
       for (object_t *a = args->next; a; a = a->next)
         {
-        if (a->type == OBJ_Integer)
-          {
-            if (a->v_integer == 0)
-              raise_runtime_error ("Division by zero");
-            result -= a->v_integer;
-          }
-        else
-          {
-            if (a->v_real == 0.0)
-              raise_runtime_error ("Division by zero");
-            result -= a->v_real;
-          }
+          if (a->type == OBJ_Integer)
+            {
+              if (a->v_integer == 0)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_integer;
+            }
+          else
+            {
+              if (a->v_real == 0.0)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_real;
+            }
         }
-      return object_new_real (result,
+      return object_new_real (result, current_heap);
     case PROMOTED_TO_COMPLEX:
       double complex result = args->v_complex;
       for (object_t *a = args->next; a; a = a->next)
         {
-        if (a->type == OBJ_Integer)
-          {
-            if (a->v_integer == 0)
-              raise_runtime_error ("Division by zero");
-            result -= a->v_integer;
-          }
-        else if (a->type == OBJ_Real)
-          {
-            if (a->v_real == 0.0)
-              raise_runtime_error ("Division by zero");
-            result -= a->v_real;
-          }
-        else
-          {
-            if (a->v_complex == 0.0 * I)
-              raise_runtime_error ("Division by zero");
-            result -= a->v_complex;
-          }
+          if (a->type == OBJ_Integer)
+            {
+              if (a->v_integer == 0)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_integer;
+            }
+          else if (a->type == OBJ_Real)
+            {
+              if (a->v_real == 0.0)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_real;
+            }
+          else
+            {
+              if (a->v_complex == 0.0 * I)
+                raise_runtime_error ("Division by zero");
+              result -= a->v_complex;
+            }
         }
-      return object_new_complex (result,
+      return object_new_complex (result, current_heap);
     default:
       return object_nil;
     }
@@ -254,7 +254,7 @@ object_t *
 builtin_quotient (object_t *args, object_t *env)
 {
   if (!args)
-    return object_new_integer (0,
+    return object_new_integer (0, current_heap);
 
   deref_symbols (args, env);
   promotion_t promotion = assess_promotion (args, "Quotient");
@@ -269,7 +269,7 @@ builtin_quotient (object_t *args, object_t *env)
       result /= a->v_integer;
     }
 
-  return object_new_integer (result,
+  return object_new_integer (result, current_heap);
 }
 
 object_t *
@@ -291,7 +291,7 @@ builtin_modulo (object_t *args, object_t *env)
 
   intmax_t result = dividend % divisor;
 
-  return object_new_integer (result,
+  return object_new_integer (result, current_heap);
 }
 
 object_t *
@@ -315,7 +315,7 @@ builtin_remainder (object_t *args, object_t *env)
 
   intmax_t result = (imaxabs (dividend) % imaxabs (divisor)) * sign;
 
-  return object_new_integer (result,
+  return object_new_integer (result, current_heap);
 }
 
 object_t *
@@ -584,7 +584,7 @@ builtin_strings_equal (object_t *args, object_t *env)
   if (!(args->type == OBJ_String || args->next->type == OBJ_String))
     raise_runtime_error ("str=? takes two string arguments");
 
-  return object_new_bools (object_equals (args, args->next),
+  return object_new_bools (object_equals (args, args->next), current_heap);
 }
 
 object_t *
@@ -693,10 +693,10 @@ builtin_vectors_equal (object_t *args, object_t *env)
     {
       for (size_t j = 0; j < args->next->v_vector->count; j++)
         {
-          bool result = object_equals (args->v_vector->vals[i],
+          bool result = object_equals (args->v_vector->vals[i], current_heap);
                                        args->next->v_vector->vals[i]);
-          if (!result)
-            return object_false;
+                                       if (!result)
+                                         return object_false;
         }
     }
   return object_true;
@@ -738,7 +738,7 @@ builtin_string_ref (object_t *args, object_t *env)
   const char32_t *buffz = args->v_buffz;
   intmax_t idx = args->next->v_integer;
 
-  return object_new_character (buffz[idx],
+  return object_new_character (buffz[idx], current_heap);
 }
 
 object_t *
@@ -802,5 +802,5 @@ builtin_bytevector_ref (object_t *args, object_t *env)
   bytevector_t *bvec = args->v_bytevector;
   intmax_t idx = args->next->v_integer;
 
-  return object_new_byte (bvec->vals[idx],
+  return object_new_byte (bvec->vals[idx], current_heap);
 }
