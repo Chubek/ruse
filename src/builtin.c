@@ -749,25 +749,19 @@ builtin_list_ref (object_t *args, object_t *env)
 
   deref_symbols (args, env);
   if (!(args->type == OBJ_Pair || args->next->type == OBJ_Integer))
-    raise_runtime_error ("list-ref takes two arguments");
+    raise_runtime_error ("list-ref takes a list, and an integer as argument");
 
-  pair_t *lst = args->v_pair;
-  object_t *cursor = lst->rest;
   intmax_t idx = args->next->v_integer;
+  object_t *current = args;
 
-  if (idx == 0)
-    return lst->first;
-
-  while (idx && cursor && cursor->rest->type != OBJ_Nil)
+  while (idx && current->type == OBJ_Pair && current->rest->type != OBJ_Nil)
     {
       idx--;
-      cursor = cursor->rest;
+      current = current->rest;
     }
 
-  if (cursor && cursor->type == OBJ_Pair)
-    return cursor->first;
-  else
-    raise_runtime_error ("Not a proper list");
+  if (current && current->type == OBJ_Pair)
+    return current->first;
 
   return object_nil;
 }
@@ -816,6 +810,54 @@ builtin_cons (object_t *args, object_t *env)
   object_t *rest = args->next;
 
   return object_new_pair (first, rest, current_heap);
+}
+
+object_t *
+builtin_car (object_t *args, object_t *env)
+{
+  if (!args)
+    raise_runtime_error ("car takes one argument");
+
+  deref_symbols (args, env);
+  if (args->type != OBJ_Pair)
+    raise_runtime_error ("car takes a pair argument");
+
+  return args->v_pair->first;
+}
+
+object_t *
+builtin_cdr (object_t *args, object_t *env)
+{
+  if (!args)
+    raise_runtime_error ("cdr takes one argument");
+
+  deref_symbols (args, env);
+  if (args->type != OBJ_Pair)
+    raise_runtime_error ("cdr takes a pair argument");
+
+  return args->v_pair->rest;
+}
+
+object_t *
+builtin_length (object_t *args, object_t *env)
+{
+  if (!args)
+    raise_runtime_error ("length takes one argument");
+
+  deref_symbols (args, env);
+  if (args->type != OBJ_Pair)
+    raise_runtime_error ("length takes a list as argument");
+
+  intmax_t len = 1;
+  object_t *current = args;
+
+  while (current->type == OBJ_Pair && current->rest->type != OBJ_Nil)
+    {
+      len++;
+      current = current->rest;
+    }
+
+  return object_new_integer (len, current_heap);
 }
 
 object_t *
