@@ -586,6 +586,58 @@ builtin_characters_equal (object_t *args, object_t *env)
 }
 
 object_t *
+builtin_characters_greater (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("char>? takes two arguments");
+
+  if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
+    raise_runtime_error ("char>? takes two character arguments");
+
+  return object_new_bool (args->v_character > args->next->v_character,
+                          current_heap);
+}
+
+object_t *
+builtin_characters_greater_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("char>=? takes two arguments");
+
+  if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
+    raise_runtime_error ("char>=? takes two character arguments");
+
+  return object_new_bool (args->v_character >= args->next->v_character,
+                          current_heap);
+}
+
+object_t *
+builtin_characters_lesser (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("char<? takes two arguments");
+
+  if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
+    raise_runtime_error ("char<? takes two character arguments");
+
+  return object_new_bool (args->v_character < args->next->v_character,
+                          current_heap);
+}
+
+object_t *
+builtin_characters_lesser_equal (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("char<=? takes two arguments");
+
+  if (!(args->type == OBJ_Character || args->next->type == OBJ_Character))
+    raise_runtime_error ("char<=? takes two character arguments");
+
+  return object_new_bool (args->v_character <= args->next->v_character,
+                          current_heap);
+}
+
+object_t *
 builtin_vectors_equal (object_t *args, object_t *env)
 {
   if (!args || !args->next)
