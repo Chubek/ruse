@@ -126,7 +126,7 @@ struct Synobj
 
 struct Symbol
 {
-  const uint8_t *id;
+  const char32_t *id;
   int mark;
 };
 
@@ -176,7 +176,7 @@ struct Object
     intmax_t v_integer;
     double v_real;
     double complex v_complex;
-    const uint8_t *v_buffz;
+    const char32_t *v_buffz;
     bool v_bool;
     char32_t v_char;
   };
@@ -213,7 +213,7 @@ object_t *object_new_conti (object_t *captured_stack, heap_t *heap);
 
 object_t *object_new_stack (size_t size, heap_t *heap);
 
-object_t *object_new_symbol (const uint8_t *id, size_t id_len, heap_t *heap);
+object_t *object_new_symbol (const char32_t *id, size_t id_len, heap_t *heap);
 object_t *object_new_synobj (object_t *datum, object_t *env, heap_t *heap);
 
 object_t *object_new_integer (intmax_t value, heap_t *heap);
@@ -222,8 +222,9 @@ object_t *object_new_complex (double complex value, heap_t *heap);
 object_t *object_new_bool (bool value, heap_t *heap);
 object_t *object_new_character (uint32_t ch, heap_t *heap);
 
-object_t *object_new_string (const uint8_t *str, size_t str_len, heap_t *heap);
-object_t *object_new_label (const uint8_t *lbl, size_t lbl_len, heap_t *heap);
+object_t *object_new_string (const char32_t *str, size_t str_len,
+                             heap_t *heap);
+object_t *object_new_label (const char32_t *lbl, size_t lbl_len, heap_t *heap);
 
 object_t *object_new_synobj (object_t *val, heap_t *heap);
 object_t *object_new_nil (heap_t *heap);

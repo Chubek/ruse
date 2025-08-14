@@ -3,6 +3,7 @@
 
 #include "heap.h"
 #include "object.h"
+#include "utils.h"
 
 #define STACK_GROWTH_FACTOR 0.85
 #define ENVIRON_GROWTH_FACTOR 0.75
@@ -23,7 +24,7 @@ object_new (objtype_t type, void *value, heap_t *heap)
       break;
     case OBJ_String:
     case OBJ_Label:
-      obj->buffz = (const uint8_t *)value;
+      obj->buffz = (const char32_t *)value;
       break;
     case OBJ_Symbol:
       obj->v_symbol = (symbol_t *)value;
@@ -411,10 +412,10 @@ object_new_character (char32_t ch, heap_t *heap)
 }
 
 object_t *
-object_new_symbol (const uint8_t *id, size_t id_len, heap_t *heap)
+object_new_symbol (const char32_t *id, size_t id_len, heap_t *heap)
 {
   symbol_t *sym = malloc (sizeof (symbol_t));
-  sym->id = strndup ((const char *)id, id_len);
+  sym->id = u32strndup (id, id_len);
   sym->mark = rand ();
   return object_new (OBJ_Symbol, (void *)sym, heap);
 }
@@ -429,16 +430,16 @@ object_new_synobj (object_t *datum, object_t *env, heap_t *heap)
 }
 
 object_t *
-object_new_string (const uint8_t *str, size_t str_len, heap_t *heap)
+object_new_string (const char32_t *str, size_t str_len, heap_t *heap)
 {
-  uint8_t *dup = strndup ((const char *)utf8, str_len);
+  char32_t *dup = u32strndup (utf8, str_len);
   return object_new (OBJ_String, dup, heap);
 }
 
 object_t *
-object_new_label (const uint8_t *lbl, size_t lbl_len, heap_t *heap)
+object_new_label (const char32_t *lbl, size_t lbl_len, heap_t *heap)
 {
-  uint8_t *dup = strndup ((const char *)utf8, lbl_len);
+  char32_t *dup = u32strndup (utf8, lbl_len);
   return object_new (OBJ_Label, dup, heap);
 }
 
