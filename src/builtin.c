@@ -686,9 +686,9 @@ builtin_vectors_equal (object_t *args, object_t *env)
   if (!(args->type == OBJ_Vector || args->next->type == OBJ_Vector))
     raise_runtime_error ("vector=? takes two vector arguments");
 
-  for (size_t i = 0; i < args->v_vector->size; i++)
+  for (size_t i = 0; i < args->v_vector->count; i++)
     {
-      for (size_t j = 0; j < args->next->v_vector->size; j++)
+      for (size_t j = 0; j < args->next->v_vector->count; j++)
         {
           bool result = object_equals (args->v_vector->vals[i],
                                        args->next->v_vector->vals[i]);
@@ -709,9 +709,9 @@ builtin_bytevectors_equal (object_t *args, object_t *env)
   if (!(args->type == OBJ_Bytevector || args->next->type == OBJ_Bytevector))
     raise_runtime_error ("bytevector=? takes two bytevector arguments");
 
-  for (size_t i = 0; i < args->v_bytevector->size; i++)
+  for (size_t i = 0; i < args->v_bytevector->count; i++)
     {
-      for (size_t j = 0; j < args->next->v_bytevector->size; j++)
+      for (size_t j = 0; j < args->next->v_bytevector->count; j++)
         {
           bool result = args->v_bytevector->vals[i]
                         == args->next->v_bytevector->vals[j];
@@ -723,7 +723,73 @@ builtin_bytevectors_equal (object_t *args, object_t *env)
 }
 
 object_t *
+builtin_string_ref (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("string-ref takes two arguments");
+
+  deref_symbols (args, env);
+  if (!(args->type == OBJ_String || args->next->type == OBJ_Integer))
+    raise_runtime_error ("string-ref takes a string, and an integer argument");
+
+  const char32_t *buffz = args->v_buffz;
+  intmax_t idx = args->next->v_integer;
+
+  return object_new_character (buffz[idx], current_heap);
+}
+
+object_t *
+builtin_list_ref (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("list-ref takes two arguments");
+
+  deref_symbols (args, env);
+  if (!(args->type == OBJ_Pair || args->next->type == OBJ_Integer))
+    raise_runtime_error ("list-ref takes two arguments");
+
+  pair_t *lst = args->v_pair;
+  intmax_t idx = args->next->v_integer;
+  size_t cursor = 0;
+
+  while (cursor <= idx && lst)
+    {
+      lst = lst->rest;
+      cursor++;
+    }
+
+  return lst->first;
+}
+
+object_t *
 builtin_vector_ref (object_t *args, object_t *env)
 {
-  if (!arg)
+  if (!args || !args->next)
+    raise_runtime_error ("vector-ref takes two arguments");
+
+  deref_symbols (args, env);
+  if (!(args->type == OBJ_Vector || args->next->type == OBJ_Integer))
+    raise_runtime_error ("vector-ref takes a vector, and an integer argument");
+
+  vector_t *vec = args->v_vector;
+  intmax_t idx = args->next->v_integer;
+
+  return vec->vals[idx];
+}
+
+object_t *
+builtin_bytevector_ref (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("bytevector-ref takes two arguments");
+
+  deref_symbols (args, env);
+  if (!(args->type == OBJ_Bytevector || args->next->type == OBJ_Integer))
+    raise_runtime_error (
+        "bytevector-ref takes a bytevector, and an integer argument");
+
+  bytevector_t *bvec = args->v_bytevector;
+  intmax_t idx = args->next->v_integer;
+
+  return object_new_byte (bvec->vals[idx], current_heap);
 }
