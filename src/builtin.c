@@ -804,3 +804,30 @@ builtin_bytevector_ref (object_t *args, object_t *env)
 
   return object_new_byte (bvec->vals[idx], current_heap);
 }
+
+object_t *
+builtin_cons (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("cons takes two arguments");
+
+  deref_symbols (args, env);
+  object_t *first = args;
+  object_t *rest = args->next;
+
+  return object_new_pair (first, rest, current_heap);
+}
+
+object_t *
+builtin_list (object_t *args, object_t *env)
+{
+  if (!args)
+    raise_runtime_error ("list takes at least one argument");
+
+  deref_symbols (args, env);
+  object_t *list = object_make_pair (NULL, object_nil, current_heap);
+  for (object_t *a = args; a; a = a->next)
+    list = object_make_pair (a, list, current_heap);
+
+  return list;
+}
