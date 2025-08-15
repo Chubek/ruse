@@ -866,10 +866,75 @@ builtin_list (object_t *args, object_t *env)
   if (!args)
     raise_runtime_error ("list takes at least one argument");
 
-  deref_symbols (args, env);
-  object_t *list = object_make_pair (NULL, object_nil, current_heap);
-  for (object_t *a = args; a; a = a->next)
-    list = object_make_pair (a, list, current_heap);
+  object_t *result = object_new_pair (args, object_nil, current_heap);
+  object_t *tail = result;
+  args = args->next;
 
-  return list;
+  while (args)
+    {
+      object_t *new_pair = object_new_pair (args, object_nil, current_heap);
+      tail->v_pair->rest = new_pair;
+      tail = new_pair;
+      args = args->next;
+    }
+
+  return result;
+}
+
+object_t *
+builtin_append (object_t *args, object_t *env)
+{
+  deref_symbols (args, env);
+
+  if (!args)
+    return object_nil;
+
+  if (!args->next)
+    return args;
+
+  size_t num_args = 1;
+  object_t *cursor = args;
+  for (cursor = args->next; cursor; cursor = cursor->next)
+    num_args++;
+
+  object_t **args_array = malloc (num_args * sizeof (object_t *));
+  size_t i = 0;
+  for (cursor = args; cursor; cursor = cursor->next)
+    args_array[i++] = cursor;
+
+  object_t *result = args_array[num_args - 1];
+  for (size_t j = num_args - 2; j >= 0; j--)
+    {
+      object_t *lst = args_array[j];
+
+      if (lst->type == OBJ_Nil)
+        continue;
+
+      if (lst->type != OBJ_Pair)
+        raise_runtime_error ("append argument is not a list");
+
+      object_t *new_head
+          = object_new_pair (lst->v_pair->first, NULL, current_heap);
+      object_t *new_tail = new_head;
+      object_t *old_rest = lst->v_pair->rest;
+
+      while (old_rest->type == OBJ_Pair)
+        {
+          object_t *new_pair
+              = object_new_pair (old_rest->v_pair->first, NULL, current_head);
+          new_tail->v_pair->rest = new_pair;
+          new_tail = new_pair;
+          old_rest = old_rest->v_pair->rest
+        }
+
+      if (old_rest->type != OBJ_Nil)
+        raise_runtime_error (
+            "append was given non-proper list in non-final argument");
+
+      new_tail->v_pair->rest = result;
+      result = new_head;
+    }
+
+  free (args_array);
+  return result;
 }
