@@ -999,3 +999,20 @@ builtin_append (object_t *args, object_t *env)
   free (args_array);
   return result;
 }
+
+object_t *
+builtin_set (object_t *args, object_t *env)
+{
+  if (!args || !args->next)
+    raise_runtime_error ("set! takes two arguments");
+
+  if (args->type != OBJ_Symbol)
+    raise_runtime_error ("set! takes a symbol as first argument");
+
+  object_t *key = args;
+  object_t *val = args->next;
+
+  environ_install (env->v_environ, key, val);
+
+  return object_nil;
+}
