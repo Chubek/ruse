@@ -781,7 +781,7 @@ builtin_string_append (object_t *args, object_t *env)
       buffz = u32strncat (buffz, a_buffz, -1);
     }
 
-  return object_new_string (buffz, current_heap);
+  return object_new_string ((const char32_t*)buffz, current_heap);
 }
 
 object_t *
