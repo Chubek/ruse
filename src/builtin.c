@@ -758,6 +758,33 @@ builtin_string_length (object_t *args, object_t *env)
 }
 
 object_t *
+builtin_string_append (object_t *args, object_t *env)
+{
+  if (!args)
+    return object_nil;
+
+  if (!args->next)
+    return args;
+
+  deref_symbols (args, env);
+
+  if (args->type != OBJ_String)
+    raise_runtime_error ("string-append takes a string argument");
+
+  char32_t *buffz = u32strndup (args->v_string, -1);
+  for (object_t *a = args->next; a; a = a->next)
+    {
+      if (a->type != OBJ_String)
+        raise_runtime_error ("string-append takes string arguments");
+
+      const char32_t *a_buffz = u32strndup (a->v_string, -1);
+      buffz = u32strncat (buffz, a_buffz, -1);
+    }
+
+  return object_new_string (buffz, current_heap);
+}
+
+object_t *
 builtin_list_ref (object_t *args, object_t *env)
 {
   if (!args || !args->next)
