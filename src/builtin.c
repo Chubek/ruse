@@ -742,6 +742,22 @@ builtin_string_ref (object_t *args, object_t *env)
 }
 
 object_t *
+builtin_string_length (object_t *args, object_t *env)
+{
+  if (!args)
+    raise_runtime_error ("string-length takes one argument");
+
+  deref_symbols (args, env);
+  if (args->type != OBJ_String)
+    raise_runtime_error ("string-length takes a string argument");
+
+  const char32_t *buffz = args->v_buffz;
+  intmax_t length = u32strlen (buffz);
+
+  return object_new_integer (length, current_heap);
+}
+
+object_t *
 builtin_list_ref (object_t *args, object_t *env)
 {
   if (!args || !args->next)
