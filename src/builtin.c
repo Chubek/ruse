@@ -781,7 +781,25 @@ builtin_string_append (object_t *args, object_t *env)
       buffz = u32strncat (buffz, a_buffz, -1);
     }
 
-  return object_new_string ((const char32_t*)buffz, current_heap);
+  return object_new_string ((const char32_t *)buffz, current_heap);
+}
+
+object_t *
+builtin_substring (object_t *args, object_t *env)
+{
+  if (!args | !args->next || !args->next->next)
+    raise_runtime_error ("substring takes three arguments");
+
+  deref_symbols (args, env);
+  if (!(args->type == OBJ_String || args->next->type == OBJ_Integer
+        || args->next->next->type == OBJ_Integer))
+    raise_runtime_error ("substring takes a string, an two integer arguments");
+
+  const char32_t *buffz = args->v_string;
+  intmax_t start = args->next->v_integer;
+  intmax_t end = args->next->next->v_integer;
+
+  return object_new_string (u32substring (buffz, start, end), current_heap);
 }
 
 object_t *
