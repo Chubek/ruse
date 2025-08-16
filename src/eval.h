@@ -9,13 +9,14 @@ typedef struct Expander expander_t;
 
 struct Interpreter
 {
-   heap_t *heap;
-   stack_t *stack;
-   environ_t *environ;
-   object_t *accumulator;
-   object_t *next_expr;
+  heap_t *heap;
+  stack_t *stack;
+  environ_t *environ;
+  object_t *accumulator;
+  object_t *next_expr;
+  object_t *evaluated_args;
 };
 
-struct 
+struct
 
 #endif
