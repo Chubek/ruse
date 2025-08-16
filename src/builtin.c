@@ -1040,3 +1040,12 @@ builtin_apply (object_t *args, object_t *env)
       eval_builtin (proc->value->v_builtin, proc_args, env);
     }
 }
+
+object_t *
+builtin_quote (object_t *args, object_t *env)
+{
+  if (!args || args->next)
+    raise_runtime_error ("quote takes exactly one argument");
+
+  return args;
+}
