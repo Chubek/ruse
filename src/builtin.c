@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <math.h>
 
+#include "eval.h"
 #include "heap.h"
 #include "object.h"
 
@@ -1015,4 +1016,27 @@ builtin_set (object_t *args, object_t *env)
   environ_install (env->v_environ, key, val);
 
   return object_nil;
+}
+
+object_t *
+builtin_apply (object_t *args, object_t *env)
+{
+  if (!args)
+    raise_runtime_error ("apply takes at least one argument");
+
+  deref_symbols (args, env);
+  if (args->type != OBJ_Procedure)
+    raise_runtime_error ("apply takes a procedure argument");
+
+  procedure_t *proc = args->v_procedure;
+  object_t *proc_args = args->next;
+
+  if (proc->closure)
+    {
+      eval_closure (proc->value->v_closure, proc_args, env);
+    }
+  else
+    {
+      eval_builtin (proc->value->v_builtin, proc_args, env);
+    }
 }
