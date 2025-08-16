@@ -33,6 +33,7 @@ typedef struct Symbol symbol_t;
 typedef object_t *(*primfn_t) (object_t *args, object_t *env);
 
 typedef enum ObjectType objtype_t;
+typedef enum OpCode opcode_t;
 
 struct Pair
 {
@@ -130,6 +131,22 @@ struct Symbol
   int mark;
 };
 
+enum OpCode
+{
+  OP_Halt,
+  OP_Refer,
+  OP_Constant,
+  OP_Close,
+  OP_Test,
+  OP_Assign,
+  OP_Conti,
+  OP_Nuate,
+  OP_Frame,
+  OP_Argument,
+  OP_Apply,
+  OP_Return,
+};
+
 struct Object
 {
   enum ObjectType
@@ -155,6 +172,7 @@ struct Object
     OBJ_Stack,
     OBJ_Builtin,
     OBJ_Formal,
+    OBJ_OpCode,
   } type;
 
   union
@@ -173,6 +191,7 @@ struct Object
     symbol_t *v_symbol;
     synobj_t *v_synobj;
 
+    opcode_t v_opcode;
     intmax_t v_integer;
     double v_real;
     double complex v_complex;
@@ -228,6 +247,8 @@ object_t *object_new_label (const char32_t *lbl, size_t lbl_len, heap_t *heap);
 
 object_t *object_new_synobj (object_t *val, heap_t *heap);
 object_t *object_new_nil (heap_t *heap);
+
+object_t *object_new_opcode (opcode_t opcode, heap_t *heap);
 
 void stack_push (stack_t *stk, object_t *obj);
 stack_t *stack_pop (stack_t *stk);

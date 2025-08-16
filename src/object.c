@@ -26,6 +26,8 @@ object_new (objtype_t type, void *value, heap_t *heap)
     case OBJ_Label:
       obj->buffz = (const char32_t *)value;
       break;
+    case OBJ_OpCode:
+      obj->v_opcode = *(opcode_t *)value;
     case OBJ_Symbol:
       obj->v_symbol = (symbol_t *)value;
       break;
@@ -101,6 +103,7 @@ object_delete (object_t *obj)
     case OBJ_Real:
     case OBJ_Complex:
     case OBJ_Builtin:
+    case OBJ_OpCode:
       break;
     case OBJ_String:
     case OBJ_Label:
@@ -453,6 +456,12 @@ object_t *
 object_new_nil (heap_t *heap)
 {
   return object_new (OBJ_Nil, NULL, heap);
+}
+
+object_t *
+object_new_opcode (opcode_t opcode, heap_t heap)
+{
+  return object_new (OBJ_OpCode, (void *)opcode, heap);
 }
 
 void
