@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -578,4 +579,21 @@ environ_delete (environ_t *env, object_t *key)
     {
       e_prev->next = e->next;
     }
+}
+
+object_t *
+create_list (heap_t *heap, size_t n, ...)
+{
+  va_list args;
+  va_start (args, n);
+
+  object_t *result = object_new_nil (heap);
+  for (size_t i = 0; i < n; i++)
+    {
+      object_t *elem = va_arg (args, object_t *);
+      result = object_new_pair (elem, result, heap);
+    }
+
+  va_end (args);
+  return result;
 }

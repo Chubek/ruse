@@ -257,6 +257,9 @@ void environ_install (environ_t *env, object_t *key, object_t *value);
 object_t *environ_retrieve (environ_t *env, environ_t *key);
 void environ_delete (environ_t *env, object_t *key);
 
+object_t *
+create_list (heap_t *heap, size_t n, ...);
+
 static inline object_t *
 car (object_t *pair)
 {
@@ -273,6 +276,25 @@ cdr (object_t *pair)
     raise_runtime_error ("cdr only works on pairs");
 
   return pair->v_pair->rest;
+}
+
+static inline object_t *
+cons (object_t *car, object_t *cdr)
+{
+  return object_new_pair (car, cdr);
+}
+
+static inline size_t
+list_length (object_t *lst)
+{
+  size_t length = 1;
+  while (lst->type == OBJ_Pair && lst->type != OBJ_Nil)
+    {
+      length++;
+      lst = cdr (lst);
+    }
+
+  return length;
 }
 
 #endif
